@@ -1,0 +1,9 @@
+#ifndef COBALT_PROPERTY_INFO_HPP_INCLUDED
+#define COBALT_PROPERTY_INFO_HPP_INCLUDED
+
+namespace Cobalt
+{
+
+}
+
+#endif

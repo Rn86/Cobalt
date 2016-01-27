@@ -142,6 +142,7 @@
     <ClInclude Include="FieldInfo.hpp" />
     <ClInclude Include="MethodInfo.hpp" />
     <ClInclude Include="ParameterInfo.hpp" />
+    <ClInclude Include="PropertyInfo.hpp" />
     <ClInclude Include="Reflection.hpp" />
     <ClInclude Include="TypeInfo.hpp" />
     <ClInclude Include="Value.hpp" />

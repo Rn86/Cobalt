@@ -51,6 +51,11 @@ namespace Cobalt
 		{
 		}
 
+		ATestClass GetMembet() const
+		{
+			return m_member;
+		}
+
 		ATestClass m_member;
 
 	private:
@@ -64,6 +69,7 @@ namespace Cobalt
 			reg.Constructor();
 			reg.Constructor<ATestClass>({ "member" });
 			reg.Field(&BTestClass::m_other, "m_other");
+			reg.Method(&BTestClass::GetMembet);
 		}
 
 		ATestClass m_other;
@@ -177,6 +183,17 @@ namespace Cobalt
 			Assert::IsTrue(expected == actual);
 		}
 
+		TEST_METHOD(MethodTest1)
+		{
+			int expected = 26;
+			ATestClass a(expected);
+			BTestClass b(a);
+			TypeInfo type = TypeOf(b);
+			MethodInfo method = type.GetMethods()[0];
+			ATestClass aa = method.Invoke<ATestClass>(b);
+			int actual = aa.GetNumber();
+			Assert::IsTrue(expected == actual);
+		}
 	};
 
 }

@@ -102,6 +102,73 @@ namespace Cobalt
 			m_parameters.m_constructors.push_back(ConstructorInfo(parameters, accessor));
 		}
 
+		template <typename R, typename... ARGS>
+		struct MethodMakerBase
+		{
+		public:
+			template <typename M, int ... S>
+			static Value Make(const Value && object, M method, const std::vector<Value> && arguments, seq<S...>)
+			{
+				arguments;
+				return Value((object.GetValue<T>().*method)(std::forward<ARGS>(arguments[S].GetValue<ARGS>())...));
+			}
+
+			template <typename M>
+			static std::function<Value(const Value &&, const std::vector<Value> &&)> Make(M method)
+			{
+				return[method](const Value && object, const std::vector<Value> && arguments)
+				{
+					return MethodMakerBase<R, ARGS...>::Make(std::move(object), method, std::move(arguments), typename gens<sizeof...(ARGS)>::type());
+				};
+			}
+
+			static std::vector<ParameterInfo> MakeParameters(const std::string && names)
+			{
+				return ParametersMaker<ARGS...>::Make(names, typename gens<sizeof...(ARGS)>::type());
+			}
+			
+
+			static TypeInfo GetReturnType()
+			{
+				return TypeOf<R>();
+			}
+		};
+
+		template <typename M>
+		struct MethodMaker;
+		template <typename R, typename... ARGS>
+		struct MethodMaker<R(T::*)(ARGS...)> : MethodMakerBase<R, ARGS...>
+		{
+			static constexpr MethodModifier modifier = mmNone;
+		};
+		template <typename R, typename... ARGS>
+		struct MethodMaker<R(T::*)(ARGS...) const> : MethodMakerBase<R, ARGS...>
+		{
+			static constexpr MethodModifier modifier = mmConst;
+		};
+		template <typename R, typename... ARGS>
+		struct MethodMaker<R(T::*)(ARGS...) volatile> : MethodMakerBase<R, ARGS...>
+		{
+			static constexpr MethodModifier modifier = mmVolatile;
+		};
+		template <typename R, typename... ARGS>
+		struct MethodMaker<R(T::*)(ARGS...) const volatile> : MethodMakerBase<R, ARGS...>
+		{
+			static constexpr MethodModifier modifier = mmConst | mmVolatile;
+		};
+
+		template <typename M>
+		void Method(const std::string && name, M method)
+		{
+			m_parameters.m_methods.push_back(MethodInfo(MethodMaker<M>::GetReturnType(), MethodMaker<M>::MakeParameters(std::move(names)), MethodMaker<M>::modifier, MethodMaker<M>::Make(method)));
+		}
+
+		template <typename M>
+		void Method(M method)
+		{
+			m_parameters.m_methods.push_back(MethodInfo(MethodMaker<M>::GetReturnType(), {}, MethodMaker<M>::modifier, MethodMaker<M>::Make(method)));
+		}
+
 		TypeInfoParameters m_parameters;
 	};
 

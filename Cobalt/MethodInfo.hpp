@@ -11,25 +11,34 @@ namespace Cobalt
 	struct ParameterInfo;
 	struct Value;
 
+	enum MethodModifier
+	{
+		mmNone = 0,
+		mmConst = 1,
+		mmVolatile = 2
+	};
+
 	struct MethodInfo
 	{
 	public:
-		typedef std::function<Value(const std::vector<Value> &&)> accessor_t;
+		typedef std::function<Value(const Value &&, const std::vector<Value> &&)> accessor_t;
 
 	public:
-		MethodInfo(const std::vector<ParameterInfo> & parameters, const accessor_t & accessor);
+		MethodInfo(const TypeInfo & returnType, const std::vector<ParameterInfo> & parameters, MethodModifier modifier, const accessor_t & accessor);
 		MethodInfo(const MethodInfo & constructor);
 		MethodInfo(const MethodInfo && constructor) noexcept;
 
+		TypeInfo GetReturnType() const;
 		std::vector<ParameterInfo> GetParameters() const;
+		MethodModifier GetModifier() const;
 
-		template <typename T, typename ... ARGS>
-		T Invoke(ARGS ... args) const
+		template <typename T, typename O, typename ... ARGS>
+		T Invoke(const O & object, ARGS ... args) const
 		{
-			return Invoke({ Value(std::forward<ARGS>(args))... }).GetValue<T>();
+			return Invoke(Value(object), { Value(std::forward<ARGS>(args))... }).GetValue<T>();
 		}
 
-		Value Invoke(const std::vector<Value> && values) const;
+		Value Invoke(const Value && object, const std::vector<Value> && values) const;
 
 	private:
 		struct Impl;

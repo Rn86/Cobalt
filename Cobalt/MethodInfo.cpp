@@ -6,18 +6,22 @@ namespace Cobalt
 {
 	struct MethodInfo::Impl
 	{
-		Impl(const std::vector<ParameterInfo> & parameters, const MethodInfo::accessor_t & accessor)
-			: m_parameters(parameters),
+		Impl(const TypeInfo & returnType, const std::vector<ParameterInfo> & parameters, MethodModifier modifier, const MethodInfo::accessor_t & accessor)
+			: m_returnType(returnType),
+			m_parameters(parameters),
+			m_modifier(modifier),
 			m_accessor(accessor)
 		{
 		}
 
+		TypeInfo m_returnType;
 		std::vector<ParameterInfo> m_parameters;
+		MethodModifier m_modifier;
 		MethodInfo::accessor_t m_accessor;
 	};
 
-	MethodInfo::MethodInfo(const std::vector<ParameterInfo> & parameters, const accessor_t & accessor)
-		: m_pImpl(new Impl(parameters, accessor))
+	MethodInfo::MethodInfo(const TypeInfo & returnType, const std::vector<ParameterInfo> & parameters, MethodModifier modifier, const accessor_t & accessor)
+		: m_pImpl(new Impl(returnType, parameters, modifier, accessor))
 	{
 	}
 
@@ -31,13 +35,23 @@ namespace Cobalt
 	{
 	}
 
+	TypeInfo MethodInfo::GetReturnType() const
+	{
+		return m_pImpl->m_returnType;
+	}
+
 	std::vector<ParameterInfo> MethodInfo::GetParameters() const
 	{
 		return m_pImpl->m_parameters;
 	}
 
-	Value MethodInfo::Invoke(const std::vector<Value> && values) const
+	MethodModifier MethodInfo::GetModifier() const
 	{
-		return m_pImpl->m_accessor(std::move(values));
+		return m_pImpl->m_modifier;
+	}
+
+	Value MethodInfo::Invoke(const Value && object, const std::vector<Value> && values) const
+	{
+		return m_pImpl->m_accessor(std::move(object), std::move(values));
 	}
 }
