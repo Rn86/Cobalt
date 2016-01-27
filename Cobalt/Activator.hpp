@@ -1,6 +1,8 @@
 #ifndef COBALT_ACTIVATOR_HPP_INCLUDED
 #define COBALT_ACTIVATOR_HPP_INCLUDED
 
+#include <Cobalt/TypeInfo.hpp>
+
 namespace Cobalt
 {
 	struct Activator

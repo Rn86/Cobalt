@@ -51,21 +51,20 @@ namespace Cobalt
 		}
 
 		template<int ...>
-		struct seq { };
-
+		struct sequence { };
 		template<int N, int ...S>
-		struct gens : gens<N - 1, N - 1, S...> { };
-
+		struct gen_sequence : gen_sequence<N - 1, N - 1, S...> { };
 		template<int ...S>
-		struct gens<0, S...> {
-			typedef seq<S...> type;
+		struct gen_sequence<0, S...>
+		{
+			typedef sequence<S...> type;
 		};
 
 		template <typename ... ARGS>
 		struct ConstructorMaker
 		{
 			template<int ... S>
-			static Object Make(const std::vector<Object> && arguments, seq<S...>)
+			static Object Make(const std::vector<Object> && arguments, sequence<S...>)
 			{
 				return Object(T(std::forward<ARGS>(arguments[S].GetObject<ARGS>())...));
 			}
@@ -75,7 +74,7 @@ namespace Cobalt
 		struct ParametersMaker
 		{
 			template<int ... S>
-			static std::vector<ParameterInfo> Make(const std::vector<std::string> && names, seq<S...>)
+			static std::vector<ParameterInfo> Make(const std::vector<std::string> && names, sequence<S...>)
 			{
 				return{ ParameterInfo(names[S], TypeOf<ARGS>())... };
 			}
@@ -97,9 +96,9 @@ namespace Cobalt
 		{
 			auto accessor = [](const std::vector<Object> && arguments)
 			{
-				return ConstructorMaker<ARGS...>::Make(std::move(arguments), typename gens<sizeof...(ARGS)>::type()).GetObject<T>();
+				return ConstructorMaker<ARGS...>::Make(std::move(arguments), typename gen_sequence<sizeof...(ARGS)>::type()).GetObject<T>();
 			};
-			std::vector<ParameterInfo> parameters = ParametersMaker<ARGS...>::Make(std::move(names), typename gens<sizeof...(ARGS)>::type());
+			std::vector<ParameterInfo> parameters = ParametersMaker<ARGS...>::Make(std::move(names), typename gen_sequence<sizeof...(ARGS)>::type());
 			m_parameters.m_constructors.push_back(ConstructorInfo(parameters, accessor));
 		}
 
@@ -107,7 +106,7 @@ namespace Cobalt
 		struct MethodMakerBaseEx
 		{
 			template <typename M, int ... S>
-			static Object Make(const Object && object, M method, const std::vector<Object> && arguments, seq<S...>)
+			static Object Make(const Object && object, M method, const std::vector<Object> && arguments, sequence<S...>)
 			{
 				arguments;
 				return Object((object.GetObject<T>().*method)(std::forward<ARGS>(arguments[S].GetObject<ARGS>())...));
@@ -118,13 +117,13 @@ namespace Cobalt
 			{
 				return[method](const Object && object, const std::vector<Object> && arguments)
 				{
-					return MethodMakerBase<R, ARGS...>::MakeEx(std::move(object), method, std::move(arguments), typename gens<sizeof...(ARGS)>::type());
+					return MethodMakerBase<R, ARGS...>::MakeEx(std::move(object), method, std::move(arguments), typename gen_sequence<sizeof...(ARGS)>::type());
 				};
 			}
 
 			static std::vector<ParameterInfo> MakeParameters(const std::vector<std::string> && names)
 			{
-				return ParametersMaker<ARGS...>::Make(std::move(names), typename gens<sizeof...(ARGS)>::type());
+				return ParametersMaker<ARGS...>::Make(std::move(names), typename gen_sequence<sizeof...(ARGS)>::type());
 			}
 
 
@@ -138,7 +137,7 @@ namespace Cobalt
 		struct MethodMakerBase : MethodMakerBaseEx<R, ARGS...>
 		{
 			template <typename M, int ... S>
-			static Object MakeEx(const Object && object, M method, const std::vector<Object> && arguments, seq<S...>)
+			static Object MakeEx(const Object && object, M method, const std::vector<Object> && arguments, sequence<S...>)
 			{
 				arguments;
 				return Object((object.GetObject<T>().*method)(std::forward<ARGS>(arguments[S].GetObject<ARGS>())...));
@@ -148,7 +147,7 @@ namespace Cobalt
 		struct MethodMakerBase<void, ARGS...> : MethodMakerBaseEx<void, ARGS...>
 		{
 			template <typename M, int ... S>
-			static Object MakeEx(const Object && object, M method, const std::vector<Object> && arguments, seq<S...>)
+			static Object MakeEx(const Object && object, M method, const std::vector<Object> && arguments, sequence<S...>)
 			{
 				arguments;
 				(object.GetObject<T>().*method)(std::forward<ARGS>(arguments[S].GetObject<ARGS>())...);
