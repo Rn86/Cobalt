@@ -1,6 +1,6 @@
 #include <Cobalt/ConstructorInfo.hpp>
 #include <Cobalt/ParameterInfo.hpp>
-#include <Cobalt/Value.hpp>
+#include <Cobalt/Object.hpp>
 
 namespace Cobalt
 {
@@ -36,8 +36,8 @@ namespace Cobalt
 		return m_pImpl->m_parameters;
 	}
 
-	Value ConstructorInfo::Invoke(const std::vector<Value> && values) const
+	Object ConstructorInfo::Invoke(const std::vector<Object> && arguments) const
 	{
-		return m_pImpl->m_accessor(std::move(values));
+		return m_pImpl->m_accessor(std::move(arguments));
 	}
 }

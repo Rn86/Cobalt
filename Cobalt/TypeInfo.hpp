@@ -5,6 +5,7 @@
 #include <Cobalt/FieldInfo.hpp>
 #include <Cobalt/ParameterInfo.hpp>
 #include <Cobalt/MethodInfo.hpp>
+#include <Cobalt/PropertyInfo.hpp>
 
 #include <string>
 #include <memory>
@@ -28,6 +29,7 @@ namespace Cobalt
 		std::vector<FieldInfo> GetFields() const;
 		std::vector<ConstructorInfo> GetConstructors() const;
 		std::vector<MethodInfo> GetMethods() const;
+		std::vector<PropertyInfo> GetProperties() const;
 
 		template <typename ... ARGS>
 		ConstructorInfo GetConstructor() const
@@ -42,6 +44,8 @@ namespace Cobalt
 		bool operator==(const TypeInfo && type) const;
 		bool operator!=(const TypeInfo & type) const;
 		bool operator!=(const TypeInfo && type) const;
+		TypeInfo & operator=(const TypeInfo & type);
+		TypeInfo & operator=(const TypeInfo && type) noexcept;
 
 	private:
 		friend struct Access;
@@ -53,6 +57,6 @@ namespace Cobalt
 	};
 }
 
-#include <Cobalt/Value.hpp>
+#include <Cobalt/Object.hpp>
 
 #endif //!COBALT_TYPE_INFO_HPP_INCLUDED

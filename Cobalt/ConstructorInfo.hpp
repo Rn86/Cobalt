@@ -9,12 +9,12 @@ namespace Cobalt
 {
 	struct TypeInfo;
 	struct ParameterInfo;
-	struct Value;
+	struct Object;
 
 	struct ConstructorInfo
 	{
 	public:
-		typedef std::function<Value(const std::vector<Value> &&)> accessor_t;
+		typedef std::function<Object(const std::vector<Object> &&)> accessor_t;
 
 	public:
 		ConstructorInfo(const std::vector<ParameterInfo> & parameters, const accessor_t & accessor);
@@ -26,10 +26,10 @@ namespace Cobalt
 		template <typename T, typename ... ARGS>
 		T Invoke(ARGS ... args) const
 		{
-			return Invoke({ Value(std::forward<ARGS>(args))... }).GetValue<T>();
+			return Invoke({ Object(std::forward<ARGS>(args))... }).GetObject<T>();
 		}
 
-		Value Invoke(const std::vector<Value> && values) const;
+		Object Invoke(const std::vector<Object> && arguments) const;
 
 	private:
 		struct Impl;

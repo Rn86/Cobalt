@@ -1,12 +1,12 @@
 #include <Cobalt/FieldInfo.hpp>
 #include <Cobalt/TypeInfo.hpp>
-#include <Cobalt/Value.hpp>
+#include <Cobalt/Object.hpp>
 
 namespace Cobalt
 {
 	struct FieldInfo::Impl
 	{
-		Impl(const std::string & name, const TypeInfo & type, const std::function<Value(const Value &&)> & accessor)
+		Impl(const std::string & name, const TypeInfo & type, const std::function<Object(const Object &&)> & accessor)
 			: m_name(name),
 			m_type(type),
 			m_accessor(accessor)
@@ -15,10 +15,10 @@ namespace Cobalt
 
 		std::string m_name;
 		TypeInfo m_type;
-		std::function<Value(const Value &&)> m_accessor;
+		std::function<Object(const Object &&)> m_accessor;
 	};
 
-	FieldInfo::FieldInfo(const std::string & name, const TypeInfo & type, const std::function<Value(const Value &&)> & accessor)
+	FieldInfo::FieldInfo(const std::string & name, const TypeInfo & type, const std::function<Object(const Object &&)> & accessor)
 		: m_pImpl(new Impl(name, type, accessor))
 	{
 	}
@@ -43,8 +43,8 @@ namespace Cobalt
 		return m_pImpl->m_type;
 	}
 
-	Value FieldInfo::Invoke(const Value && value) const
+	Object FieldInfo::Invoke(const Object && object) const
 	{
-		return m_pImpl->m_accessor(std::move(value));
+		return m_pImpl->m_accessor(std::move(object));
 	}
 }

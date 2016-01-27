@@ -39,4 +39,40 @@ namespace Cobalt
 	{
 		return m_pImpl->m_type;
 	}
+
+	bool ParameterInfo::operator==(const ParameterInfo & parameter) const
+	{
+		return m_pImpl->m_name == parameter.GetName() &&
+			m_pImpl->m_type == parameter.GetType();
+	}
+
+	bool ParameterInfo::operator==(const ParameterInfo && parameter) const
+	{
+		return m_pImpl->m_name == parameter.GetName() &&
+			m_pImpl->m_type == parameter.GetType();
+	}
+
+	bool ParameterInfo::operator!=(const ParameterInfo & parameter) const
+	{
+		return m_pImpl->m_name != parameter.GetName() ||
+			m_pImpl->m_type != parameter.GetType();
+	}
+
+	bool ParameterInfo::operator!=(const ParameterInfo && parameter) const
+	{
+		return m_pImpl->m_name != parameter.GetName() ||
+			m_pImpl->m_type != parameter.GetType();
+	}
+
+	ParameterInfo & ParameterInfo::operator=(const ParameterInfo & parameter)
+	{
+		m_pImpl = parameter.m_pImpl;
+		return *this;
+	}
+
+	ParameterInfo & ParameterInfo::operator=(const ParameterInfo && parameter) noexcept
+	{
+		m_pImpl = std::move(parameter.m_pImpl);
+		return *this;
+	}
 }

@@ -18,6 +18,13 @@ namespace Cobalt
 		std::string GetName() const;
 		TypeInfo GetType() const;
 
+		bool operator==(const ParameterInfo & parameter) const;
+		bool operator==(const ParameterInfo && parameter) const;
+		bool operator!=(const ParameterInfo & parameter) const;
+		bool operator!=(const ParameterInfo && parameter) const;
+		ParameterInfo & operator=(const ParameterInfo & parameter);
+		ParameterInfo & operator=(const ParameterInfo && parameter) noexcept;
+
 	private:
 		struct Impl;
 		std::shared_ptr<Impl> m_pImpl;

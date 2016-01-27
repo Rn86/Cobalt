@@ -13,7 +13,8 @@ namespace Cobalt
 			m_name(reg.m_name),
 			m_fields(reg.m_fields),
 			m_constructors(reg.m_constructors),
-			m_methods(reg.m_methods)
+			m_methods(reg.m_methods),
+			m_properties(reg.m_properties)
 		{
 		}
 
@@ -23,6 +24,7 @@ namespace Cobalt
 		std::vector<FieldInfo> m_fields;
 		std::vector<ConstructorInfo> m_constructors;
 		std::vector<MethodInfo> m_methods;
+		std::vector<PropertyInfo> m_properties;
 	};
 
 	TypeInfo::TypeInfo(const TypeInfoParameters & reg)
@@ -70,6 +72,11 @@ namespace Cobalt
 		return m_pImpl->m_methods;
 	}
 
+	std::vector<PropertyInfo> TypeInfo::GetProperties() const
+	{
+		return m_pImpl->m_properties;
+	}
+
 	ConstructorInfo TypeInfo::GetConstructor(const std::vector<TypeInfo> && types) const
 	{
 		bool found = false;
@@ -111,9 +118,24 @@ namespace Cobalt
 		return type.GetHashCode() != GetHashCode();
 	}
 
+	TypeInfo & TypeInfo::operator=(const TypeInfo & type)
+	{
+		m_pImpl = type.m_pImpl;
+		return *this;
+	}
+
+	TypeInfo & TypeInfo::operator=(const TypeInfo && type) noexcept
+	{
+		m_pImpl = std::move(type.m_pImpl);
+		return *this;
+	}
+
 	void TypeInfo::TypeOf(TypeRegistry<TypeInfo> & reg)
 	{
 		reg.Namespace("Cobalt");
 		reg.Name("TypeInfo");
+		reg.Method("GetHashCode", &TypeInfo::GetHashCode);
+		reg.Method("GetNamespace", &TypeInfo::GetNamespace);
+		reg.Method("GetName", &TypeInfo::GetName);
 	}
 }

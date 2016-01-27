@@ -18,7 +18,7 @@ namespace Cobalt
 		static auto CreateInstance(const TypeInfo & type, ARGS ... args)
 		{
 			auto constructor = type.GetConstructor({ TypeOf<ARGS>()... });
-			auto result = constructor.Invoke({ Value(std::forward<ARGS>(args))... });
+			auto result = constructor.Invoke({ Object(std::forward<ARGS>(args))... });
 			if (type != result.GetType())
 				throw std::exception("Can not create instance");
 			return result;
@@ -28,7 +28,7 @@ namespace Cobalt
 		static auto CreateInstance(const TypeInfo && type, ARGS ... args)
 		{
 			auto constructor = type.GetConstructor({ TypeOf<ARGS>()... });
-			auto result = constructor.Invoke({ Value(std::forward<ARGS>(args))... });
+			auto result = constructor.Invoke({ Object(std::forward<ARGS>(args))... });
 			if (type != result.GetType())
 				throw std::exception("Can not create instance");
 			return result;

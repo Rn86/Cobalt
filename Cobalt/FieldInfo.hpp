@@ -7,12 +7,12 @@
 namespace Cobalt
 {
 	struct TypeInfo;
-	struct Value;
+	struct Object;
 
 	struct FieldInfo
 	{
 	public:
-		FieldInfo(const std::string & name, const TypeInfo & type, const std::function<Value(const Value &&)> & accessor);
+		FieldInfo(const std::string & name, const TypeInfo & type, const std::function<Object(const Object &&)> & accessor);
 		FieldInfo(const FieldInfo & field);
 		FieldInfo(const FieldInfo && field) noexcept;
 
@@ -22,10 +22,10 @@ namespace Cobalt
 		template <typename T, typename O>
 		T Invoke(const O & object) const
 		{
-			return Invoke(Value(object)).GetValue<T>();
+			return Invoke(Object(object)).GetObject<T>();
 		}
 
-		Value Invoke(const Value && value) const;
+		Object Invoke(const Object && object) const;
 
 	private:
 		struct Impl;

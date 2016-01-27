@@ -3,7 +3,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-#include <Cobalt/Reflection.hpp>
+#include <Cobalt/TypeInfo.hpp>
 #include <Cobalt/Activator.hpp>
 
 namespace Cobalt
@@ -51,9 +51,14 @@ namespace Cobalt
 		{
 		}
 
-		ATestClass GetMembet() const
+		ATestClass GetMember() const
 		{
 			return m_member;
+		}
+
+		void SetMember(const ATestClass & member)
+		{
+			m_member = member;
 		}
 
 		ATestClass m_member;
@@ -69,7 +74,8 @@ namespace Cobalt
 			reg.Constructor();
 			reg.Constructor<ATestClass>({ "member" });
 			reg.Field(&BTestClass::m_other, "m_other");
-			reg.Method(&BTestClass::GetMembet);
+			reg.Method("GetMember", &BTestClass::GetMember);
+			reg.Property("member", &BTestClass::GetMember, &BTestClass::SetMember);
 		}
 
 		ATestClass m_other;
@@ -117,8 +123,8 @@ namespace Cobalt
 		TEST_METHOD(ValueTest)
 		{
 			ATestClass expected(13);
-			auto value = Value(expected);
-			ATestClass actual = value.GetValue<ATestClass>();
+			auto value = Object(expected);
+			ATestClass actual = value.GetObject<ATestClass>();
 			Assert::IsTrue(expected.m_number == actual.m_number);
 		}
 
@@ -190,6 +196,19 @@ namespace Cobalt
 			BTestClass b(a);
 			TypeInfo type = TypeOf(b);
 			MethodInfo method = type.GetMethods()[0];
+			ATestClass aa = method.Invoke<ATestClass>(b);
+			int actual = aa.GetNumber();
+			Assert::IsTrue(expected == actual);
+		}
+
+		TEST_METHOD(PropertyTest)
+		{
+			int expected = 26;
+			ATestClass a(expected);
+			BTestClass b(a);
+			TypeInfo type = TypeOf(b);
+			PropertyInfo property = type.GetProperties()[0];
+			MethodInfo method = property.GetGetMethod();
 			ATestClass aa = method.Invoke<ATestClass>(b);
 			int actual = aa.GetNumber();
 			Assert::IsTrue(expected == actual);

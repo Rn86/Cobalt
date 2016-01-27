@@ -9,7 +9,7 @@ namespace Cobalt
 {
 	struct TypeInfo;
 	struct ParameterInfo;
-	struct Value;
+	struct Object;
 
 	enum MethodModifier
 	{
@@ -21,24 +21,32 @@ namespace Cobalt
 	struct MethodInfo
 	{
 	public:
-		typedef std::function<Value(const Value &&, const std::vector<Value> &&)> accessor_t;
+		typedef std::function<Object(const Object &&, const std::vector<Object> &&)> accessor_t;
 
 	public:
-		MethodInfo(const TypeInfo & returnType, const std::vector<ParameterInfo> & parameters, MethodModifier modifier, const accessor_t & accessor);
+		MethodInfo(const TypeInfo & returnType, const std::string && name, const std::vector<ParameterInfo> & parameters, MethodModifier modifier, const accessor_t & accessor);
 		MethodInfo(const MethodInfo & constructor);
 		MethodInfo(const MethodInfo && constructor) noexcept;
 
 		TypeInfo GetReturnType() const;
+		std::string GetName() const;
 		std::vector<ParameterInfo> GetParameters() const;
 		MethodModifier GetModifier() const;
 
 		template <typename T, typename O, typename ... ARGS>
 		T Invoke(const O & object, ARGS ... args) const
 		{
-			return Invoke(Value(object), { Value(std::forward<ARGS>(args))... }).GetValue<T>();
+			return Invoke(Object(object), { Object(std::forward<ARGS>(args))... }).GetObject<T>();
 		}
 
-		Value Invoke(const Value && object, const std::vector<Value> && values) const;
+		Object Invoke(const Object && object, const std::vector<Object> && arguments) const;
+
+		bool operator==(const MethodInfo & method) const;
+		bool operator==(const MethodInfo && method) const;
+		bool operator!=(const MethodInfo & method) const;
+		bool operator!=(const MethodInfo && method) const;
+		MethodInfo & operator=(const MethodInfo & method);
+		MethodInfo & operator=(const MethodInfo && method) noexcept;
 
 	private:
 		struct Impl;

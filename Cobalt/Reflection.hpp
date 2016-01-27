@@ -17,6 +17,7 @@ namespace Cobalt
 		std::vector<FieldInfo> m_fields;
 		std::vector<ConstructorInfo> m_constructors;
 		std::vector<MethodInfo> m_methods;
+		std::vector<PropertyInfo> m_properties;
 	};
 
 	template <typename T>
@@ -41,10 +42,10 @@ namespace Cobalt
 		template <typename F>
 		void Field(F (T::*field), const std::string && name)
 		{
-			auto accessor = [field](const Value && value)
+			auto accessor = [field](const Object && object)
 			{
-				auto object = value.GetValue<T>();
-				return Value(object.*field);
+				auto obj = object.GetObject<T>();
+				return Object(obj.*field);
 			};
 			m_parameters.m_fields.push_back(FieldInfo(name, TypeOf<F>(), accessor));
 		}
@@ -64,9 +65,9 @@ namespace Cobalt
 		struct ConstructorMaker
 		{
 			template<int ... S>
-			static Value Make(const std::vector<Value> && arguments, seq<S...>)
+			static Object Make(const std::vector<Object> && arguments, seq<S...>)
 			{
-				return Value(T(std::forward<ARGS>(arguments[S].GetValue<ARGS>())...));
+				return Object(T(std::forward<ARGS>(arguments[S].GetObject<ARGS>())...));
 			}
 		};
 
@@ -82,11 +83,11 @@ namespace Cobalt
 
 		void Constructor()
 		{
-			auto accessor = [](const std::vector<Value> && values)
+			auto accessor = [](const std::vector<Object> && arguments)
 			{
-				if (values.size() > 0)
+				if (arguments.size() > 0)
 					throw std::exception("Object can not be constructed");
-				return Value(T());
+				return Object(T());
 			};
 			m_parameters.m_constructors.push_back(ConstructorInfo({}, accessor));
 		}
@@ -94,43 +95,64 @@ namespace Cobalt
 		template <typename ... ARGS>
 		void Constructor(const std::vector<std::string> && names)
 		{
-			auto accessor = [](const std::vector<Value> && values)
+			auto accessor = [](const std::vector<Object> && arguments)
 			{
-				return ConstructorMaker<ARGS...>::Make(std::move(values), typename gens<sizeof...(ARGS)>::type()).GetValue<T>();
+				return ConstructorMaker<ARGS...>::Make(std::move(arguments), typename gens<sizeof...(ARGS)>::type()).GetObject<T>();
 			};
 			std::vector<ParameterInfo> parameters = ParametersMaker<ARGS...>::Make(std::move(names), typename gens<sizeof...(ARGS)>::type());
 			m_parameters.m_constructors.push_back(ConstructorInfo(parameters, accessor));
 		}
 
 		template <typename R, typename... ARGS>
-		struct MethodMakerBase
+		struct MethodMakerBaseEx
 		{
-		public:
 			template <typename M, int ... S>
-			static Value Make(const Value && object, M method, const std::vector<Value> && arguments, seq<S...>)
+			static Object Make(const Object && object, M method, const std::vector<Object> && arguments, seq<S...>)
 			{
 				arguments;
-				return Value((object.GetValue<T>().*method)(std::forward<ARGS>(arguments[S].GetValue<ARGS>())...));
+				return Object((object.GetObject<T>().*method)(std::forward<ARGS>(arguments[S].GetObject<ARGS>())...));
 			}
 
 			template <typename M>
-			static std::function<Value(const Value &&, const std::vector<Value> &&)> Make(M method)
+			static std::function<Object(const Object &&, const std::vector<Object> &&)> Make(M method)
 			{
-				return[method](const Value && object, const std::vector<Value> && arguments)
+				return[method](const Object && object, const std::vector<Object> && arguments)
 				{
-					return MethodMakerBase<R, ARGS...>::Make(std::move(object), method, std::move(arguments), typename gens<sizeof...(ARGS)>::type());
+					return MethodMakerBase<R, ARGS...>::MakeEx(std::move(object), method, std::move(arguments), typename gens<sizeof...(ARGS)>::type());
 				};
 			}
 
-			static std::vector<ParameterInfo> MakeParameters(const std::string && names)
+			static std::vector<ParameterInfo> MakeParameters(const std::vector<std::string> && names)
 			{
-				return ParametersMaker<ARGS...>::Make(names, typename gens<sizeof...(ARGS)>::type());
+				return ParametersMaker<ARGS...>::Make(std::move(names), typename gens<sizeof...(ARGS)>::type());
 			}
-			
+
 
 			static TypeInfo GetReturnType()
 			{
 				return TypeOf<R>();
+			}
+		};
+
+		template <typename R, typename... ARGS>
+		struct MethodMakerBase : MethodMakerBaseEx<R, ARGS...>
+		{
+			template <typename M, int ... S>
+			static Object MakeEx(const Object && object, M method, const std::vector<Object> && arguments, seq<S...>)
+			{
+				arguments;
+				return Object((object.GetObject<T>().*method)(std::forward<ARGS>(arguments[S].GetObject<ARGS>())...));
+			}
+		};
+		template <typename... ARGS>
+		struct MethodMakerBase<void, ARGS...> : MethodMakerBaseEx<void, ARGS...>
+		{
+			template <typename M, int ... S>
+			static Object MakeEx(const Object && object, M method, const std::vector<Object> && arguments, seq<S...>)
+			{
+				arguments;
+				(object.GetObject<T>().*method)(std::forward<ARGS>(arguments[S].GetObject<ARGS>())...);
+				return Object();
 			}
 		};
 
@@ -158,32 +180,60 @@ namespace Cobalt
 		};
 
 		template <typename M>
-		void Method(const std::string && name, M method)
+		void Method(const std::string && name, M method, const std::vector<std::string> && names)
 		{
-			m_parameters.m_methods.push_back(MethodInfo(MethodMaker<M>::GetReturnType(), MethodMaker<M>::MakeParameters(std::move(names)), MethodMaker<M>::modifier, MethodMaker<M>::Make(method)));
+			m_parameters.m_methods.push_back(MethodInfo(MethodMaker<M>::GetReturnType(), std::move(name), MethodMaker<M>::MakeParameters(std::move(names)), MethodMaker<M>::modifier, MethodMaker<M>::Make(method)));
 		}
 
 		template <typename M>
-		void Method(M method)
+		void Method(const std::string && name, M method)
 		{
-			m_parameters.m_methods.push_back(MethodInfo(MethodMaker<M>::GetReturnType(), {}, MethodMaker<M>::modifier, MethodMaker<M>::Make(method)));
+			m_parameters.m_methods.push_back(MethodInfo(MethodMaker<M>::GetReturnType(), std::move(name), {}, MethodMaker<M>::modifier, MethodMaker<M>::Make(method)));
+		}
+
+		template <typename G, typename S>
+		void Property(const std::string && name, G getter, S setter)
+		{
+			m_parameters.m_properties.push_back(PropertyInfo(
+				std::move(name),
+				MethodInfo(MethodMaker<G>::GetReturnType(), "get_" + name, {}, MethodMaker<G>::modifier, MethodMaker<G>::Make(getter)),
+				MethodInfo(MethodMaker<S>::GetReturnType(), "set_" + name, MethodMaker<S>::MakeParameters({ std::move(name) }), MethodMaker<S>::modifier, MethodMaker<S>::Make(setter))
+				));
 		}
 
 		TypeInfoParameters m_parameters;
 	};
 
 	struct TypeOfAccess;
+	template <typename T>
+	struct is_reflectable;
 
 	struct Access
 	{
 	private:
 		friend struct TypeOfAccess;
+		template <typename T>
+		friend struct is_reflectable;
 
 		template <typename T>
 		static void TypeOf(TypeRegistry<T> & reg)
 		{
 			T::TypeOf(reg);
 		}
+
+		template <typename T>
+		struct IsReflectable
+		{
+			template<typename U, U> struct Check;
+
+			template<typename U>
+			static std::true_type Test(Check<void(*)(TypeRegistry<T>&), &U::TypeOf>*);
+
+			template<typename U>
+			static std::false_type Test(...);
+
+			static const bool value = decltype(Test<T>(0))::value;
+		};
 	};
 
 	struct TypeOfAccess
@@ -197,16 +247,42 @@ namespace Cobalt
 		}
 	};
 
-	template <typename T>
-	static auto TypeOf()
+	template<typename T>
+	struct is_reflectable
 	{
-		return TypeOfAccess::TypeOf<T>();
+		static constexpr bool value = Access::IsReflectable<T>::value;
+	};
+
+	template <typename T, bool ref>
+	struct TypeOfProxy
+	{
+		static auto TypeOf()
+		{
+			return TypeOfAccess::TypeOf<T>();
+		}
+	};
+	template <typename T>
+	struct TypeOfProxy<T, false>
+	{
+		static TypeInfo TypeOf()
+		{
+			TypeInfoParameters parameters;
+			parameters.m_name = typeid(T).name();
+			parameters.m_hash = typeid(T).hash_code();
+			return TypeInfo(parameters);
+		}
+	};
+
+	template <typename T>
+	static TypeInfo TypeOf()
+	{
+		return TypeOfProxy<T, is_reflectable<T>::value>::TypeOf();
 	}
 
 	template <typename T>
-	static auto TypeOf(T)
+	static TypeInfo TypeOf(T)
 	{
-		return TypeOfAccess::TypeOf<T>();
+		return TypeOfProxy<T, is_reflectable<T>::value>::TypeOf();
 	}
 }
 
