@@ -40,4 +40,36 @@ namespace Cobalt
 	{
 		return m_pImpl->m_accessor(std::move(arguments));
 	}
+
+	bool ConstructorInfo::operator==(const ConstructorInfo & constructor) const
+	{
+		return m_pImpl->m_parameters == constructor.GetParameters();
+	}
+
+	bool ConstructorInfo::operator==(const ConstructorInfo && constructor) const
+	{
+		return m_pImpl->m_parameters == constructor.GetParameters();
+	}
+
+	bool ConstructorInfo::operator!=(const ConstructorInfo & constructor) const
+	{
+		return m_pImpl->m_parameters != constructor.GetParameters();
+	}
+
+	bool ConstructorInfo::operator!=(const ConstructorInfo && constructor) const
+	{
+		return m_pImpl->m_parameters != constructor.GetParameters();
+	}
+
+	ConstructorInfo & ConstructorInfo::operator=(const ConstructorInfo & constructor)
+	{
+		m_pImpl = constructor.m_pImpl;
+		return *this;
+	}
+
+	ConstructorInfo & ConstructorInfo::operator=(const ConstructorInfo && constructor) noexcept
+	{
+		m_pImpl = std::move(constructor.m_pImpl);
+		return *this;
+	}
 }

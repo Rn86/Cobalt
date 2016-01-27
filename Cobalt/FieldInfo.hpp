@@ -12,7 +12,10 @@ namespace Cobalt
 	struct FieldInfo
 	{
 	public:
-		FieldInfo(const std::string & name, const TypeInfo & type, const std::function<Object(const Object &&)> & accessor);
+		typedef std::function<Object(const Object &&)> accessor_t;
+
+	public:
+		FieldInfo(const std::string & name, const TypeInfo & type, const accessor_t & accessor);
 		FieldInfo(const FieldInfo & field);
 		FieldInfo(const FieldInfo && field) noexcept;
 
@@ -26,6 +29,13 @@ namespace Cobalt
 		}
 
 		Object Invoke(const Object && object) const;
+
+		bool operator==(const FieldInfo & field) const;
+		bool operator==(const FieldInfo && field) const;
+		bool operator!=(const FieldInfo & field) const;
+		bool operator!=(const FieldInfo && field) const;
+		FieldInfo & operator=(const FieldInfo & field);
+		FieldInfo & operator=(const FieldInfo && field) noexcept;
 
 	private:
 		struct Impl;

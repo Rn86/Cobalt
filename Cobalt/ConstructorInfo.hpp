@@ -31,6 +31,13 @@ namespace Cobalt
 
 		Object Invoke(const std::vector<Object> && arguments) const;
 
+		bool operator==(const ConstructorInfo & constructor) const;
+		bool operator==(const ConstructorInfo && constructor) const;
+		bool operator!=(const ConstructorInfo & constructor) const;
+		bool operator!=(const ConstructorInfo && constructor) const;
+		ConstructorInfo & operator=(const ConstructorInfo & constructor);
+		ConstructorInfo & operator=(const ConstructorInfo && constructor) noexcept;
+
 	private:
 		struct Impl;
 		std::shared_ptr<Impl> m_pImpl;

@@ -3,7 +3,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-#include <Cobalt/TypeInfo.hpp>
+#include <Cobalt/Reflection.hpp>
 #include <Cobalt/Activator.hpp>
 
 namespace Cobalt
