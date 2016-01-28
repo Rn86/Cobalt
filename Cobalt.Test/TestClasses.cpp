@@ -14,7 +14,7 @@ namespace Cobalt
 	{
 		reg.Namespace("Cobalt");
 		reg.Name("ATestClass");
-		reg.Field(&ATestClass::m_number, "m_number");
+		reg.Field("m_number", &ATestClass::m_number);
 	}
 
 	BTestClass::BTestClass()

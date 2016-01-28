@@ -45,6 +45,9 @@
     <ClInclude Include="Forward.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TypeRegister.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ConstructorInfo.cpp">
@@ -63,6 +66,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PropertyInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TypeRegister.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

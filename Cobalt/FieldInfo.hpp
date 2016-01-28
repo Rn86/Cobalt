@@ -15,7 +15,7 @@ namespace Cobalt
 		typedef std::function<Object(const Object &&)> accessor_t;
 
 	public:
-		FieldInfo(const std::string & name, const TypeInfo & type, const accessor_t & accessor);
+		FieldInfo(const std::string && name, const TypeInfo && type, const accessor_t & accessor);
 		FieldInfo(const FieldInfo & field);
 		FieldInfo(const FieldInfo && field) noexcept;
 

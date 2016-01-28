@@ -6,8 +6,8 @@ namespace Cobalt
 {
 	struct FieldInfo::Impl
 	{
-		Impl(const std::string & name, const TypeInfo & type, const FieldInfo::accessor_t & accessor)
-			: m_name(name),
+		Impl(const std::string && name, const TypeInfo && type, const FieldInfo::accessor_t & accessor)
+			: m_name(std::move(name)),
 			m_type(type),
 			m_accessor(accessor)
 		{
@@ -18,8 +18,8 @@ namespace Cobalt
 		FieldInfo::accessor_t m_accessor;
 	};
 
-	FieldInfo::FieldInfo(const std::string & name, const TypeInfo & type, const accessor_t & accessor)
-		: m_pImpl(new Impl(name, type, accessor))
+	FieldInfo::FieldInfo(const std::string && name, const TypeInfo && type, const accessor_t & accessor)
+		: m_pImpl(new Impl(std::move(name), std::move(type), accessor))
 	{
 	}
 

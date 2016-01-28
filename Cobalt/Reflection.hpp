@@ -2,6 +2,7 @@
 #define COBALT_REFLECTION_HPP_INCLUDED
 
 #include <Cobalt/TypeInfo.hpp>
+#include <Cobalt/TypeRegister.hpp>
 
 #include <string>
 #include <vector>
@@ -27,6 +28,7 @@ namespace Cobalt
 		TypeRegistry()
 		{
 			m_parameters.m_hash = typeid(T).hash_code();
+			m_parameters.m_name = typeid(T).name();
 		}
 
 		void Namespace(const std::string && space)
@@ -40,14 +42,14 @@ namespace Cobalt
 		}
 
 		template <typename F>
-		void Field(F (T::*field), const std::string && name)
+		void Field(const std::string && name, F (T::*field))
 		{
 			auto accessor = [field](const Object && object)
 			{
 				auto obj = object.GetObject<T>();
 				return Object(obj.*field);
 			};
-			m_parameters.m_fields.push_back(FieldInfo(name, TypeOf<F>(), accessor));
+			m_parameters.m_fields.push_back(FieldInfo(std::move(name), TypeOf<F>(), accessor));
 		}
 
 		template<int ...>
@@ -275,13 +277,13 @@ namespace Cobalt
 	template <typename T>
 	static TypeInfo TypeOf()
 	{
-		return TypeOfProxy<T, is_reflectable<T>::value>::TypeOf();
+		return TypeRegister::Register<T>(&TypeOfProxy<T, is_reflectable<T>::value>::TypeOf);
 	}
 
 	template <typename T>
 	static TypeInfo TypeOf(T)
 	{
-		return TypeOfProxy<T, is_reflectable<T>::value>::TypeOf();
+		return TypeRegister::Register<T>(&TypeOfProxy<T, is_reflectable<T>::value>::TypeOf);
 	}
 }
 
