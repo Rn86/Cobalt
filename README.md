@@ -2,6 +2,7 @@
 C++ Reflection API
 
 List of features thats is going to be integrated soon:
+
 1. Geting information about base types.
 2. Geting type information from polimorphic types.
 3. Static methods information.
