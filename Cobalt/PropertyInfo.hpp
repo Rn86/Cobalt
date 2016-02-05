@@ -7,19 +7,15 @@
 
 namespace Cobalt
 {
-	struct TypeInfo;
-	struct MethodInfo;
-	struct Object;
-
 	struct PropertyInfo
 	{
 	public:
-		PropertyInfo(const std::string && name, const MethodInfo & getter, const MethodInfo & setter);
+		PropertyInfo(const std::string && name, const struct MethodInfo & getter, const struct MethodInfo & setter);
 		PropertyInfo(const PropertyInfo & property);
 		PropertyInfo(const PropertyInfo && property) noexcept;
 
 		std::string GetName() const;
-		TypeInfo GetType() const;
+		struct TypeInfo GetType() const;
 		MethodInfo GetGetMethod() const;
 		MethodInfo GetSetMethod() const;
 
@@ -29,6 +25,10 @@ namespace Cobalt
 		bool operator!=(const PropertyInfo && property) const;
 		PropertyInfo & operator=(const PropertyInfo & property);
 		PropertyInfo & operator=(const PropertyInfo && property) noexcept;
+
+	private:
+		friend struct Access;
+		static void TypeOf(TypeRegistry<PropertyInfo> & reg);
 
 	private:
 		struct Impl;

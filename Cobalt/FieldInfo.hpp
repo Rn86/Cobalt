@@ -25,7 +25,7 @@ namespace Cobalt
 		template <typename T, typename O>
 		T Invoke(const O & object) const
 		{
-			return Invoke(Object(object)).GetObject<T>();
+			return Invoke(Object(object)).As<T>();
 		}
 
 		Object Invoke(const Object && object) const;

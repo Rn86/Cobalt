@@ -2,7 +2,7 @@
 #define COBALT_REFLECTION_HPP_INCLUDED
 
 #include <Cobalt/TypeInfo.hpp>
-#include <Cobalt/TypeRegister.hpp>
+#include <Cobalt/Reflectable.hpp>
 
 #include <string>
 #include <vector>
@@ -19,6 +19,8 @@ namespace Cobalt
 		std::vector<ConstructorInfo> m_constructors;
 		std::vector<MethodInfo> m_methods;
 		std::vector<PropertyInfo> m_properties;
+		std::vector<TypeInfo> m_bases;
+		std::vector<OperatorInfo> m_operators;
 	};
 
 	template <typename T>
@@ -46,7 +48,7 @@ namespace Cobalt
 		{
 			auto accessor = [field](const Object && object)
 			{
-				auto obj = object.GetObject<T>();
+				auto obj = object.As<T>();
 				return Object(obj.*field);
 			};
 			m_parameters.m_fields.push_back(FieldInfo(std::move(name), TypeOf<F>(), accessor));
@@ -68,7 +70,7 @@ namespace Cobalt
 			template<int ... S>
 			static Object Make(const std::vector<Object> && arguments, sequence<S...>)
 			{
-				return Object(T(std::forward<ARGS>(arguments[S].GetObject<ARGS>())...));
+				return Object(T(std::forward<ARGS>(arguments[S].As<ARGS>())...));
 			}
 		};
 
@@ -98,7 +100,7 @@ namespace Cobalt
 		{
 			auto accessor = [](const std::vector<Object> && arguments)
 			{
-				return ConstructorMaker<ARGS...>::Make(std::move(arguments), typename gen_sequence<sizeof...(ARGS)>::type()).GetObject<T>();
+				return ConstructorMaker<ARGS...>::Make(std::move(arguments), typename gen_sequence<sizeof...(ARGS)>::type()).As<T>();
 			};
 			std::vector<ParameterInfo> parameters = ParametersMaker<ARGS...>::Make(std::move(names), typename gen_sequence<sizeof...(ARGS)>::type());
 			m_parameters.m_constructors.push_back(ConstructorInfo(parameters, accessor));
@@ -111,7 +113,7 @@ namespace Cobalt
 			static Object Make(const Object && object, M method, const std::vector<Object> && arguments, sequence<S...>)
 			{
 				arguments;
-				return Object((object.GetObject<T>().*method)(std::forward<ARGS>(arguments[S].GetObject<ARGS>())...));
+				return Object((object.As<T>().*method)(std::forward<ARGS>(arguments[S].As<ARGS>())...));
 			}
 
 			template <typename M>
@@ -142,7 +144,7 @@ namespace Cobalt
 			static Object MakeEx(const Object && object, M method, const std::vector<Object> && arguments, sequence<S...>)
 			{
 				arguments;
-				return Object((object.GetObject<T>().*method)(std::forward<ARGS>(arguments[S].GetObject<ARGS>())...));
+				return Object((object.As<T>().*method)(std::forward<ARGS>(arguments[S].As<ARGS>())...));
 			}
 		};
 		template <typename... ARGS>
@@ -152,7 +154,7 @@ namespace Cobalt
 			static Object MakeEx(const Object && object, M method, const std::vector<Object> && arguments, sequence<S...>)
 			{
 				arguments;
-				(object.GetObject<T>().*method)(std::forward<ARGS>(arguments[S].GetObject<ARGS>())...);
+				(object.As<T>().*method)(std::forward<ARGS>(arguments[S].As<ARGS>())...);
 				return Object();
 			}
 		};
@@ -202,6 +204,38 @@ namespace Cobalt
 				));
 		}
 
+		template <typename T>
+		void Base()
+		{
+			m_parameters.m_bases.push_back(TypeOf<T>());
+		}
+
+		template <typename M>
+		static MethodInfo MakeMethod(const std::string && name, M method, const std::vector<std::string> && names)
+		{
+			return MethodInfo(MethodMaker<M>::GetReturnType(), std::move(name), MethodMaker<M>::MakeParameters(std::move(names)), MethodMaker<M>::modifier, MethodMaker<M>::Make(method));
+		}
+
+		static OperatorInfo MakeOperator(Cobalt::Operator oper, const std::vector<std::string> && names)
+		{
+			switch (oper)
+			{
+			case Cobalt::Operator::equality:
+				return{ oper, MakeMethod("operator==", &T::operator==, std::move(names)) };
+			}
+			throw std::exception("failed");
+		};
+
+		void Operator(Cobalt::Operator oper, const std::vector<std::string> && names)
+		{
+			m_parameters.m_operators.push_back(MakeOperator(oper, std::move(names)));
+		}
+
+		void Operator(Cobalt::Operator oper)
+		{
+			m_parameters.m_operators.push_back(MakeOperator(oper, {}));
+		}
+
 		TypeInfoParameters m_parameters;
 	};
 
@@ -214,7 +248,7 @@ namespace Cobalt
 	private:
 		friend struct TypeOfAccess;
 		template <typename T>
-		friend struct is_reflectable;
+		friend struct is_staticly_reflectable;
 
 		template <typename T>
 		static void TypeOf(TypeRegistry<T> & reg)
@@ -223,7 +257,13 @@ namespace Cobalt
 		}
 
 		template <typename T>
-		struct IsReflectable
+		static auto TypeOf(const T & object)
+		{
+			return object.GetTypeOf();
+		}
+
+		template <typename T>
+		struct is_staticly_reflectable
 		{
 			template<typename U, U> struct Check;
 
@@ -246,26 +286,42 @@ namespace Cobalt
 			Access::TypeOf(reg);
 			return TypeInfo(reg.m_parameters);
 		}
+		template <typename C>
+		static auto TypeOf(const C & object)
+		{
+			return Access::TypeOf(object);
+		}
 	};
 
-	template<typename T>
-	struct is_reflectable
+	template <typename T>
+	struct is_staticly_reflectable
 	{
-		static constexpr bool value = Access::IsReflectable<T>::value;
+		static constexpr bool value = Access::is_staticly_reflectable<T>::value;
+	};
+
+	template <typename T>
+	struct is_dinamicly_reflectable
+	{
+		static constexpr bool value = std::is_base_of<Reflectable<T>, T>::value;
 	};
 
 	template <typename T, bool ref>
 	struct TypeOfProxy
 	{
-		static auto TypeOf()
+		static auto TypeOfStatic()
 		{
 			return TypeOfAccess::TypeOf<T>();
+		}
+		template <typename C>
+		static auto TypeOfDynamic(const C & object)
+		{
+			return TypeOfAccess::TypeOf(object);
 		}
 	};
 	template <typename T>
 	struct TypeOfProxy<T, false>
 	{
-		static TypeInfo TypeOf()
+		static TypeInfo TypeOfStatic()
 		{
 			TypeInfoParameters parameters;
 			parameters.m_name = typeid(T).name();
@@ -274,16 +330,26 @@ namespace Cobalt
 		}
 	};
 
+	struct TypeRegister
+	{
+		static TypeInfo Register(size_t hash, const std::function<TypeInfo()> & typeof);
+	};
+
 	template <typename T>
 	static TypeInfo TypeOf()
 	{
-		return TypeRegister::Register<T>(&TypeOfProxy<T, is_reflectable<T>::value>::TypeOf);
+		typedef std::remove_pointer<std::decay<T>::type>::type raw_t;
+		std::function<TypeInfo()> accessor = std::bind(&TypeOfProxy<raw_t, is_staticly_reflectable<raw_t>::value>::TypeOfStatic);
+		return TypeRegister::Register(typeid(raw_t).hash_code(), accessor);
 	}
 
 	template <typename T>
-	static TypeInfo TypeOf(T)
+	static TypeInfo TypeOf(const T &)
 	{
-		return TypeRegister::Register<T>(&TypeOfProxy<T, is_reflectable<T>::value>::TypeOf);
+		return TypeOf<T>();
+		//typedef std::remove_pointer<std::decay<T>::type>::type raw_t;
+		//std::function<TypeInfo()> accessor = std::bind(&TypeOfProxy<raw_t, is_dinamicly_reflectable<raw_t>::value>::TypeOfDynamic<raw_t>, object);
+		//return TypeRegister::Register(typeid(raw_t).hash_code(), accessor);
 	}
 }
 

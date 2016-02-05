@@ -43,7 +43,7 @@ namespace Cobalt
 		template <typename T>
 		operator T() const
 		{
-			return GetObject<T>();
+			return As<T>();
 		}
 
 		Object & operator=(const Object & object)
@@ -58,12 +58,35 @@ namespace Cobalt
 			return *this;
 		}
 
-		template <typename T>
-		T GetObject() const
+		bool operator==(const Object & object) const
 		{
-			if (m_pImpl->m_type != TypeOf<T>())
-				throw std::exception("Types does not match");
-			return static_cast<Impl<T>*>(m_pImpl.get())->m_object;
+			auto method = m_pImpl->m_type.GetOperator(Operator::equality).GetMethod();
+			return method.Invoke(Object(*this), std::vector<Object>{ object });
+		}
+
+		bool operator==(const Object && object) const
+		{
+			auto method = m_pImpl->m_type.GetOperator(Operator::equality).GetMethod();
+			return method.Invoke(Object(*this), std::vector<Object>{ std::move(object) });
+		}
+
+		bool Is(const TypeInfo & type) const
+		{
+			return m_pImpl->m_type == type;
+		}
+
+		bool Is(const TypeInfo && type) const
+		{
+			return m_pImpl->m_type == std::move(type);
+		}
+
+		template <typename T>
+		T As() const
+		{
+			auto type = TypeOf<T>();
+			if (m_pImpl->m_type == TypeOf<T>() || ((std::is_reference<T>::value || std::is_pointer<T>::value) && type.IsSubclassOf(m_pImpl->m_type)))
+				return std::move(static_cast<Impl<T>*>(m_pImpl.get())->m_object);
+			throw std::exception("Can not cast to target type");
 		}
 
 		TypeInfo GetType() const

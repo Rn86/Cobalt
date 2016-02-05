@@ -26,7 +26,7 @@ namespace Cobalt
 		template <typename T, typename ... ARGS>
 		T Invoke(ARGS ... args) const
 		{
-			return Invoke({ Object(std::forward<ARGS>(args))... }).GetObject<T>();
+			return Invoke({ Object(std::forward<ARGS>(args))... }).As<T>();
 		}
 
 		Object Invoke(const std::vector<Object> && arguments) const;

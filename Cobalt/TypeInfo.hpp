@@ -1,25 +1,24 @@
 #ifndef COBALT_TYPE_INFO_HPP_INCLUDED
 #define COBALT_TYPE_INFO_HPP_INCLUDED
 
+#include <Cobalt/Forward.hpp>
+
 #include <Cobalt/ConstructorInfo.hpp>
 #include <Cobalt/FieldInfo.hpp>
 #include <Cobalt/ParameterInfo.hpp>
 #include <Cobalt/MethodInfo.hpp>
 #include <Cobalt/PropertyInfo.hpp>
+#include <Cobalt/OperatorInfo.hpp>
 
 #include <string>
 #include <memory>
 
 namespace Cobalt
 {
-	template <typename T>
-	struct TypeRegistry;
-	struct TypeInfoParameters;
-
 	struct TypeInfo
 	{
 	public:
-		TypeInfo(const TypeInfoParameters & parameters);
+		TypeInfo(const struct TypeInfoParameters & parameters);
 		TypeInfo(const TypeInfo & info);
 		TypeInfo(const TypeInfo && info) noexcept;
 
@@ -30,6 +29,14 @@ namespace Cobalt
 		std::vector<ConstructorInfo> GetConstructors() const;
 		std::vector<MethodInfo> GetMethods() const;
 		std::vector<PropertyInfo> GetProperties() const;
+		std::vector<TypeInfo> GetBaseTypes() const;
+		std::vector<OperatorInfo> GetOperators() const;
+
+		bool IsSubclassOf(const TypeInfo & type) const;
+		bool IsSubclassOf(const TypeInfo && type) const;
+
+		ConstructorInfo GetConstructor(const std::vector<TypeInfo> && types) const;
+		OperatorInfo GetOperator(Operator oper) const;
 
 		template <typename ... ARGS>
 		ConstructorInfo GetConstructor() const
@@ -37,9 +44,12 @@ namespace Cobalt
 			return GetConstructor({ TypeOf<ARGS>()... });
 		}
 
-		ConstructorInfo GetConstructor(const std::vector<TypeInfo> && types) const;
+		template <typename T>
+		bool IsSubclassOf() const
+		{
+			return IsSubclassOf(TypeOf<T>());
+		}
 
-		operator std::string() const;
 		bool operator==(const TypeInfo & type) const;
 		bool operator==(const TypeInfo && type) const;
 		bool operator!=(const TypeInfo & type) const;
@@ -49,6 +59,7 @@ namespace Cobalt
 
 	private:
 		friend struct Access;
+		friend struct TypeRegister;
 		static void TypeOf(TypeRegistry<TypeInfo> & reg);
 
 	private:

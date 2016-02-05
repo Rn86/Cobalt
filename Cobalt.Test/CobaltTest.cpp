@@ -39,19 +39,11 @@ namespace Cobalt
 			Assert::IsTrue(expected == actual);
 		}
 
-		TEST_METHOD(TestMethod4)
-		{
-			auto info = TypeOf<ATestClass>();
-			std::string expected = "Cobalt::ATestClass";
-			std::string actual = info;
-			Assert::IsTrue(expected == actual);
-		}
-
 		TEST_METHOD(ValueTest)
 		{
 			ATestClass expected(13);
 			auto value = Object(expected);
-			ATestClass actual = value.GetObject<ATestClass>();
+			ATestClass actual = value.As<ATestClass>();
 			Assert::IsTrue(expected.m_number == actual.m_number);
 		}
 
@@ -127,6 +119,32 @@ namespace Cobalt
 			ATestClass aa = method.Invoke<ATestClass>(b);
 			int actual = aa.m_number;
 			Assert::IsTrue(expected == actual);
+		}
+
+		/*TEST_METHOD(GetTypeOfTest)
+		{
+			ATestClass a(26);
+			ATestClass * pa = new BTestClass(a);
+			TypeInfo type = TypeOf(*pa);
+			std::string expected = "BTestClass";
+			std::string actual = type.GetName();
+			Logger::WriteMessage(actual.c_str());
+			Assert::IsTrue(expected == actual);
+			//Assert::IsTrue(std::is_base_of<Reflectable<BTestClass>, BTestClass>::value);
+			//PropertyInfo property = type.GetProperties()[0];
+			//MethodInfo method = property.GetGetMethod();
+			//ATestClass aa = method.Invoke<ATestClass>(b);
+			//int actual = aa.m_number;
+			//Assert::IsTrue(expected == actual);
+		}*/
+
+		TEST_METHOD(Test)
+		{
+			ATestClass a(26);
+			ATestClass b(26);
+			Object _a(a);
+			Object _b(b);
+			Assert::IsTrue(_a == _b);
 		}
 	};
 

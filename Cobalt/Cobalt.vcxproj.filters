@@ -45,7 +45,10 @@
     <ClInclude Include="Forward.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TypeRegister.hpp">
+    <ClInclude Include="Reflectable.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OperatorInfo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -68,7 +71,7 @@
     <ClCompile Include="PropertyInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TypeRegister.cpp">
+    <ClCompile Include="OperatorInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

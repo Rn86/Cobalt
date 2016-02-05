@@ -1,6 +1,4 @@
-#include <Cobalt/PropertyInfo.hpp>
-#include <Cobalt/MethodInfo.hpp>
-#include <Cobalt/Object.hpp>
+#include <Cobalt/Reflection.hpp>
 
 namespace Cobalt
 {
@@ -87,5 +85,18 @@ namespace Cobalt
 	{
 		m_pImpl = std::move(property.m_pImpl);
 		return *this;
+	}
+
+	void PropertyInfo::TypeOf(TypeRegistry<PropertyInfo> & reg)
+	{
+		reg.Namespace("Cobalt");
+		reg.Name("PropertyInfo");
+		reg.Constructor<const std::string &&, const MethodInfo &, const MethodInfo &>({ "name", "getter", "setter" });
+		reg.Constructor<const PropertyInfo &>({ "property" });
+		reg.Constructor<const PropertyInfo &&>({ "property" });
+		reg.Method("GetName", &PropertyInfo::GetName);
+		reg.Method("GetType", &PropertyInfo::GetType);
+		reg.Method("GetGetMethod", &PropertyInfo::GetGetMethod);
+		reg.Method("GetSetMethod", &PropertyInfo::GetSetMethod);
 	}
 }
