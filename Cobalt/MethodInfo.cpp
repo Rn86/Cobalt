@@ -4,11 +4,12 @@ namespace Cobalt
 {
 	struct MethodInfo::Impl
 	{
-		Impl(const TypeInfo & returnType, const std::string && name, const std::vector<ParameterInfo> & parameters, MethodModifier modifier, const MethodInfo::accessor_t & accessor)
+		Impl(const TypeInfo & returnType, const std::string && name, const std::vector<ParameterInfo> & parameters, MethodModifier modifier, bool isStatic, const MethodInfo::accessor_t & accessor)
 			: m_returnType(returnType),
 			m_name(std::move(name)),
 			m_parameters(parameters),
 			m_modifier(modifier),
+			m_isStatic(isStatic),
 			m_accessor(accessor)
 		{
 		}
@@ -17,11 +18,12 @@ namespace Cobalt
 		std::string m_name;
 		std::vector<ParameterInfo> m_parameters;
 		MethodModifier m_modifier;
+		bool m_isStatic;
 		MethodInfo::accessor_t m_accessor;
 	};
 
-	MethodInfo::MethodInfo(const TypeInfo & returnType, const std::string && name, const std::vector<ParameterInfo> & parameters, MethodModifier modifier, const accessor_t & accessor)
-		: m_pImpl(new Impl(returnType, std::move(name), parameters, modifier, accessor))
+	MethodInfo::MethodInfo(const TypeInfo & returnType, const std::string && name, const std::vector<ParameterInfo> & parameters, MethodModifier modifier, bool isStatic, const accessor_t & accessor)
+		: m_pImpl(new Impl(returnType, std::move(name), parameters, modifier, isStatic, accessor))
 	{
 	}
 
@@ -53,6 +55,16 @@ namespace Cobalt
 	MethodModifier MethodInfo::GetModifier() const
 	{
 		return m_pImpl->m_modifier;
+	}
+
+	bool MethodInfo::IsStatic() const
+	{
+		return m_pImpl->m_isStatic;
+	}
+
+	Object MethodInfo::Invoke(const Object & object, const std::vector<Object> && arguments) const
+	{
+		return Invoke(Object(object), std::move(arguments));
 	}
 
 	Object MethodInfo::Invoke(const Object && object, const std::vector<Object> && arguments) const
@@ -113,13 +125,13 @@ namespace Cobalt
 	{
 		reg.Namespace("Cobalt");
 		reg.Name("MethodInfo");
-		reg.Constructor<const TypeInfo &, const std::string &&, const std::vector<ParameterInfo> &, MethodModifier, const accessor_t &>({ "returnType", "name", "parameters", "modifier", "accessor" });
+		reg.Constructor<const TypeInfo &, const std::string &&, const std::vector<ParameterInfo> &, MethodModifier, bool, const accessor_t &>({ "returnType", "name", "parameters", "modifier", "isStatic", "accessor" });
 		reg.Constructor<const MethodInfo &>({ "method" });
 		reg.Constructor<const MethodInfo &&>({ "method" });
 		reg.Method("GetReturnType", &MethodInfo::GetReturnType);
 		reg.Method("GetName", &MethodInfo::GetName);
 		reg.Method("GetParameters", &MethodInfo::GetParameters);
 		reg.Method("GetModifier", &MethodInfo::GetModifier);
-		reg.Method("Invoke", &MethodInfo::Invoke);
+		//reg.Method("Invoke", &MethodInfo::Invoke);
 	}
 }

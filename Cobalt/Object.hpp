@@ -18,6 +18,11 @@ namespace Cobalt
 		{
 		}
 
+		Object(nullptr_t)
+			: m_pImpl(new Impl<void>)
+		{
+		}
+
 		template <typename T>
 		Object(const T & object)
 			: m_pImpl(new Impl<T>(object))
@@ -133,4 +138,6 @@ namespace Cobalt
 		};
 		std::shared_ptr<ImplBase> m_pImpl;
 	};
+
+	static const Object null{};
 }

@@ -142,6 +142,22 @@ namespace Cobalt
 			Assert::IsTrue(_a == _b);
 		}
 
+		TEST_METHOD(StaticMethodTest1)
+		{
+			auto type = TypeOf<ATestClass>();
+			auto method = type.GetMethod("GetNumber2");
+			int expected = 2;
+			int actual = method.Invoke(null, {});
+			Assert::IsTrue(expected == actual);
+		}
+
+		TEST_METHOD(StaticMethodTest2)
+		{
+			auto type = TypeOf<ATestClass>();
+			auto method = type.GetMethod("GetNumber2");
+			Assert::IsTrue(method.IsStatic());
+		}
+
 		TEST_METHOD(TypeBuilderTest1)
 		{
 			TypeBuilder builder("Cobalt", "Runtime_Type");

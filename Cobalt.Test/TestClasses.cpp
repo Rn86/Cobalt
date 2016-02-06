@@ -20,6 +20,11 @@ namespace Cobalt
 	{
 	}
 
+	int ATestClass::GetNumber2()
+	{
+		return 2;
+	}
+
 	ATestClass & ATestClass::operator=(const ATestClass & object)
 	{
 		m_number = object.m_number;
@@ -41,6 +46,7 @@ namespace Cobalt
 		reg.Namespace("Cobalt");
 		reg.Name("ATestClass");
 		reg.Field("m_number", &ATestClass::m_number);
+		reg.Method("GetNumber2", &ATestClass::GetNumber2);
 		reg.Operator<EQUALITY>({ "object" });
 	}
 

@@ -107,7 +107,7 @@ namespace Cobalt
 			m_parameters.m_constructors.push_back(ConstructorInfo(parameters, accessor));
 		}
 
-		template <typename R, typename... ARGS>
+		template <bool stat, typename R, typename... ARGS>
 		struct MethodMakerBaseEx
 		{
 			template <typename M, int ... S>
@@ -122,7 +122,7 @@ namespace Cobalt
 			{
 				return[method](const Object && object, const std::vector<Object> && arguments)
 				{
-					return MethodMakerBase<R, ARGS...>::MakeEx(std::move(object), method, std::move(arguments), typename gen_sequence<sizeof...(ARGS)>::type());
+					return MethodMakerBase<stat, R, ARGS...>::MakeEx(std::move(object), method, std::move(arguments), typename gen_sequence<sizeof...(ARGS)>::type());
 				};
 			}
 
@@ -138,8 +138,8 @@ namespace Cobalt
 			}
 		};
 
-		template <typename R, typename... ARGS>
-		struct MethodMakerBase : MethodMakerBaseEx<R, ARGS...>
+		template <bool stat, typename R, typename... ARGS>
+		struct MethodMakerBase : MethodMakerBaseEx<stat, R, ARGS...>
 		{
 			template <typename M, int ... S>
 			static Object MakeEx(const Object && object, M method, const std::vector<Object> && arguments, sequence<S...>)
@@ -148,8 +148,8 @@ namespace Cobalt
 				return Object((object.As<T>().*method)(std::forward<ARGS>(arguments[S].As<ARGS>())...));
 			}
 		};
-		template <typename... ARGS>
-		struct MethodMakerBase<void, ARGS...> : MethodMakerBaseEx<void, ARGS...>
+		template <bool stat, typename... ARGS>
+		struct MethodMakerBase<stat, void, ARGS...> : MethodMakerBaseEx<stat, void, ARGS...>
 		{
 			template <typename M, int ... S>
 			static Object MakeEx(const Object && object, M method, const std::vector<Object> && arguments, sequence<S...>)
@@ -159,40 +159,71 @@ namespace Cobalt
 				return Object();
 			}
 		};
+		template <typename R, typename... ARGS>
+		struct MethodMakerBase<true, R, ARGS...> : MethodMakerBaseEx<true, R, ARGS...>
+		{
+			template <typename M, int ... S>
+			static Object MakeEx(const Object &&, M method, const std::vector<Object> && arguments, sequence<S...>)
+			{
+				arguments;
+				return Object(method(std::forward<ARGS>(arguments[S].As<ARGS>())...));
+			}
+		};
+		template <typename... ARGS>
+		struct MethodMakerBase<true, void, ARGS...> : MethodMakerBaseEx<true, void, ARGS...>
+		{
+			template <typename M, int ... S>
+			static Object MakeEx(const Object &&, M method, const std::vector<Object> && arguments, sequence<S...>)
+			{
+				arguments;
+				method(std::forward<ARGS>(arguments[S].As<ARGS>())...);
+				return Object();
+			}
+		};
 
 		template <typename M>
 		struct MethodMaker;
 		template <typename R, typename... ARGS>
-		struct MethodMaker<R(T::*)(ARGS...)> : MethodMakerBase<R, ARGS...>
+		struct MethodMaker<R(T::*)(ARGS...)> : MethodMakerBase<false, R, ARGS...>
 		{
+			static constexpr bool IsStatic = false;
 			static constexpr MethodModifier modifier = mmNone;
 		};
 		template <typename R, typename... ARGS>
-		struct MethodMaker<R(T::*)(ARGS...) const> : MethodMakerBase<R, ARGS...>
+		struct MethodMaker<R(T::*)(ARGS...) const> : MethodMakerBase<false, R, ARGS...>
 		{
+			static constexpr bool IsStatic = false;
 			static constexpr MethodModifier modifier = mmConst;
 		};
 		template <typename R, typename... ARGS>
-		struct MethodMaker<R(T::*)(ARGS...) volatile> : MethodMakerBase<R, ARGS...>
+		struct MethodMaker<R(T::*)(ARGS...) volatile> : MethodMakerBase<false, R, ARGS...>
 		{
+			static constexpr bool IsStatic = false;
 			static constexpr MethodModifier modifier = mmVolatile;
 		};
 		template <typename R, typename... ARGS>
-		struct MethodMaker<R(T::*)(ARGS...) const volatile> : MethodMakerBase<R, ARGS...>
+		struct MethodMaker<R(T::*)(ARGS...) const volatile> : MethodMakerBase<false, R, ARGS...>
 		{
+			static constexpr bool IsStatic = false;
 			static constexpr MethodModifier modifier = mmConst | mmVolatile;
+		};
+		template <typename R, typename... ARGS>
+		struct MethodMaker<R(*)(ARGS...)> : MethodMakerBase<true, R, ARGS...>
+		{
+			static constexpr bool IsStatic = true;
+			static constexpr MethodModifier modifier = mmNone;
 		};
 
 		template <typename M>
 		void Method(const std::string && name, M method, const std::vector<std::string> && names)
 		{
-			m_parameters.m_methods.push_back(MethodInfo(MethodMaker<M>::GetReturnType(), std::move(name), MethodMaker<M>::MakeParameters(std::move(names)), MethodMaker<M>::modifier, MethodMaker<M>::Make(method)));
+			m_parameters.m_methods.push_back(MethodInfo(MethodMaker<M>::GetReturnType(), std::move(name), MethodMaker<M>::MakeParameters(std::move(names)), MethodMaker<M>::modifier, MethodMaker<M>::IsStatic, MethodMaker<M>::Make(method)));
 		}
 
 		template <typename M>
 		void Method(const std::string && name, M method)
 		{
-			m_parameters.m_methods.push_back(MethodInfo(MethodMaker<M>::GetReturnType(), std::move(name), {}, MethodMaker<M>::modifier, MethodMaker<M>::Make(method)));
+			m_parameters.m_methods.push_back(MethodInfo(MethodMaker<M>::GetReturnType(), std::move(name), {}, MethodMaker<M>::modifier, MethodMaker<M>::IsStatic, MethodMaker<M>::Make(method)));
 		}
 
 		template <typename G, typename S>
@@ -200,8 +231,8 @@ namespace Cobalt
 		{
 			m_parameters.m_properties.push_back(PropertyInfo(
 				std::move(name),
-				MethodInfo(MethodMaker<G>::GetReturnType(), "get_" + name, {}, MethodMaker<G>::modifier, MethodMaker<G>::Make(getter)),
-				MethodInfo(MethodMaker<S>::GetReturnType(), "set_" + name, MethodMaker<S>::MakeParameters({ std::move(name) }), MethodMaker<S>::modifier, MethodMaker<S>::Make(setter))
+				MethodInfo(MethodMaker<G>::GetReturnType(), "get_" + name, {}, MethodMaker<G>::modifier, false, MethodMaker<G>::Make(getter)),
+				MethodInfo(MethodMaker<S>::GetReturnType(), "set_" + name, MethodMaker<S>::MakeParameters({ std::move(name) }), MethodMaker<S>::modifier, false, MethodMaker<S>::Make(setter))
 				));
 		}
 
@@ -214,7 +245,7 @@ namespace Cobalt
 		template <typename M>
 		static MethodInfo MakeMethod(const std::string && name, M method, const std::vector<std::string> && names)
 		{
-			return MethodInfo(MethodMaker<M>::GetReturnType(), std::move(name), MethodMaker<M>::MakeParameters(std::move(names)), MethodMaker<M>::modifier, MethodMaker<M>::Make(method));
+			return MethodInfo(MethodMaker<M>::GetReturnType(), std::move(name), MethodMaker<M>::MakeParameters(std::move(names)), MethodMaker<M>::modifier, MethodMaker<M>::IsStatic, MethodMaker<M>::Make(method));
 		}
 
 		template <Cobalt::Operator oper>

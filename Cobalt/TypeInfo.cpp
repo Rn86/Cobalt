@@ -182,7 +182,7 @@ namespace Cobalt
 	ConstructorInfo TypeInfo::GetConstructor(const std::vector<TypeInfo> && types) const
 	{
 		bool found = false;
-		for (auto constructor : m_pImpl->m_constructors)
+		for (auto & constructor : m_pImpl->m_constructors)
 		{
 			auto parameters = constructor.GetParameters();
 			for (size_t i = 0; i < parameters.size(); i++)
@@ -195,6 +195,16 @@ namespace Cobalt
 		throw std::exception("Could not find appropriet constructor");
 	}
 
+	MethodInfo TypeInfo::GetMethod(const std::string && name) const
+	{
+		for (auto & method : m_pImpl->m_methods)
+		{
+			if (name == method.GetName())
+				return method;
+		}
+		throw std::exception("Could not find appropriet method");
+	}
+
 	OperatorInfo TypeInfo::GetOperator(Operator oper) const
 	{
 		for (auto & operat : m_pImpl->m_operators)
@@ -202,7 +212,7 @@ namespace Cobalt
 			if (oper == operat.GetOperator())
 				return operat;
 		}
-		throw std::exception("Could not find appropriet constructor");
+		throw std::exception("Could not find appropriet operator");
 	}
 
 	bool TypeInfo::operator==(const TypeInfo & type) const

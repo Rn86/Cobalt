@@ -26,7 +26,7 @@ namespace Cobalt
 		typedef std::function<Object(const Object &&, const std::vector<Object> &&)> accessor_t;
 
 	public:
-		MethodInfo(const TypeInfo & returnType, const std::string && name, const std::vector<ParameterInfo> & parameters, MethodModifier modifier, const accessor_t & accessor);
+		MethodInfo(const TypeInfo & returnType, const std::string && name, const std::vector<ParameterInfo> & parameters, MethodModifier modifier, bool isStatic, const accessor_t & accessor);
 		MethodInfo(const MethodInfo & constructor);
 		MethodInfo(const MethodInfo && constructor) noexcept;
 
@@ -34,14 +34,16 @@ namespace Cobalt
 		std::string GetName() const;
 		std::vector<ParameterInfo> GetParameters() const;
 		MethodModifier GetModifier() const;
+		bool IsStatic() const;
+
+		Object Invoke(const Object & object, const std::vector<Object> && arguments) const;
+		Object Invoke(const Object && object, const std::vector<Object> && arguments) const;
 
 		template <typename T, typename O, typename ... ARGS>
 		T Invoke(const O & object, ARGS ... args) const
 		{
 			return Invoke(Object(object), { Object(std::forward<ARGS>(args))... }).As<T>();
 		}
-
-		Object Invoke(const Object && object, const std::vector<Object> && arguments) const;
 
 		bool operator==(const MethodInfo & method) const;
 		bool operator==(const MethodInfo && method) const;

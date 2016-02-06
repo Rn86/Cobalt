@@ -37,6 +37,7 @@ namespace Cobalt
 		bool IsSubclassOf(const TypeInfo && type) const;
 
 		ConstructorInfo GetConstructor(const std::vector<TypeInfo> && types) const;
+		MethodInfo GetMethod(const std::string && name) const;
 		OperatorInfo GetOperator(Operator oper) const;
 
 		template <typename ... ARGS>

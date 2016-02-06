@@ -15,6 +15,8 @@ namespace Cobalt
 
 		bool operator==(const ATestClass & object) const;
 
+		static int GetNumber2();
+
 		int m_number;
 	private:
 		friend Access;
