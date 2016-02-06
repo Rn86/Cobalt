@@ -1,6 +1,8 @@
 #ifndef COBALT_METHOD_INFO_HPP_INCLUDED
 #define COBALT_METHOD_INFO_HPP_INCLUDED
 
+#include <Cobalt/Forward.hpp>
+
 #include <functional>
 #include <vector>
 #include <memory>
@@ -47,6 +49,10 @@ namespace Cobalt
 		bool operator!=(const MethodInfo && method) const;
 		MethodInfo & operator=(const MethodInfo & method);
 		MethodInfo & operator=(const MethodInfo && method) noexcept;
+
+	private:
+		friend struct Access;
+		static void TypeOf(TypeRegistry<MethodInfo> & reg);
 
 	private:
 		struct Impl;

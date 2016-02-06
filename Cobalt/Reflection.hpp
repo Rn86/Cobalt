@@ -2,7 +2,6 @@
 #define COBALT_REFLECTION_HPP_INCLUDED
 
 #include <Cobalt/TypeInfo.hpp>
-#include <Cobalt/Reflectable.hpp>
 
 #include <string>
 #include <vector>
@@ -15,6 +14,7 @@ namespace Cobalt
 		size_t m_hash;
 		std::string m_space;
 		std::string m_name;
+		size_t m_size;
 		std::vector<FieldInfo> m_fields;
 		std::vector<ConstructorInfo> m_constructors;
 		std::vector<MethodInfo> m_methods;
@@ -31,6 +31,7 @@ namespace Cobalt
 		{
 			m_parameters.m_hash = typeid(T).hash_code();
 			m_parameters.m_name = typeid(T).name();
+			m_parameters.m_size = sizeof(T);
 		}
 
 		void Namespace(const std::string && space)
@@ -80,7 +81,7 @@ namespace Cobalt
 			template<int ... S>
 			static std::vector<ParameterInfo> Make(const std::vector<std::string> && names, sequence<S...>)
 			{
-				return{ ParameterInfo(names[S], TypeOf<ARGS>())... };
+				return{ ParameterInfo(std::move(names[S]), TypeOf<ARGS>())... };
 			}
 		};
 
@@ -223,7 +224,7 @@ namespace Cobalt
 			case Cobalt::Operator::equality:
 				return{ oper, MakeMethod("operator==", &T::operator==, std::move(names)) };
 			}
-			throw std::exception("failed");
+			throw std::exception("Operator is not supported by Cobalt");
 		};
 
 		void Operator(Cobalt::Operator oper, const std::vector<std::string> && names)
@@ -239,16 +240,14 @@ namespace Cobalt
 		TypeInfoParameters m_parameters;
 	};
 
-	struct TypeOfAccess;
-	template <typename T>
-	struct is_reflectable;
-
 	struct Access
 	{
 	private:
 		friend struct TypeOfAccess;
 		template <typename T>
 		friend struct is_staticly_reflectable;
+		template <typename T>
+		friend struct is_dynamically_reflectable;
 
 		template <typename T>
 		static void TypeOf(TypeRegistry<T> & reg)
@@ -256,16 +255,34 @@ namespace Cobalt
 			T::TypeOf(reg);
 		}
 
+		template <typename T, bool ptr>
+		struct CallTypeOf
+		{
+			static auto TypeOf(const T & object)
+			{
+				return object.TypeOf();
+			}
+		};
+		template <typename T>
+		struct CallTypeOf<T, true>
+		{
+			static auto TypeOf(const T & object)
+			{
+				return object->TypeOf();
+			}
+		};
+
 		template <typename T>
 		static auto TypeOf(const T & object)
 		{
-			return object.GetTypeOf();
+			return CallTypeOf<T, std::is_pointer<T>::value>::TypeOf(object);
 		}
 
 		template <typename T>
 		struct is_staticly_reflectable
 		{
-			template<typename U, U> struct Check;
+			template<typename U, U>
+			struct Check;
 
 			template<typename U>
 			static std::true_type Test(Check<void(*)(TypeRegistry<T>&), &U::TypeOf>*);
@@ -273,7 +290,22 @@ namespace Cobalt
 			template<typename U>
 			static std::false_type Test(...);
 
-			static const bool value = decltype(Test<T>(0))::value;
+			static constexpr bool value = decltype(Test<T>(0))::value;
+		};
+
+		template<typename T>
+		struct is_dynamically_reflectable
+		{
+			template<typename U, TypeInfo(U::*)() const>
+			struct Check;
+
+			template<typename U>
+			static std::true_type Test(Check<U, &U::TypeOf>*);
+
+			template<typename U>
+			static std::false_type Test(...);
+
+			static constexpr bool value = decltype(Test<T>(0))::value;
 		};
 	};
 
@@ -300,9 +332,9 @@ namespace Cobalt
 	};
 
 	template <typename T>
-	struct is_dinamicly_reflectable
+	struct is_dynamically_reflectable
 	{
-		static constexpr bool value = std::is_base_of<Reflectable<T>, T>::value;
+		static constexpr bool value = Access::is_dynamically_reflectable<T>::value;
 	};
 
 	template <typename T, bool ref>
@@ -326,6 +358,18 @@ namespace Cobalt
 			TypeInfoParameters parameters;
 			parameters.m_name = typeid(T).name();
 			parameters.m_hash = typeid(T).hash_code();
+			parameters.m_size = sizeof(T);
+			return TypeInfo(parameters);
+		}
+	};
+	template <>
+	struct TypeOfProxy<void, false>
+	{
+		static TypeInfo TypeOfStatic()
+		{
+			TypeInfoParameters parameters;
+			parameters.m_name = typeid(void).name();
+			parameters.m_hash = typeid(void).hash_code();
 			return TypeInfo(parameters);
 		}
 	};
@@ -344,12 +388,12 @@ namespace Cobalt
 	}
 
 	template <typename T>
-	static TypeInfo TypeOf(const T &)
+	static TypeInfo TypeOf(const T & object)
 	{
-		return TypeOf<T>();
-		//typedef std::remove_pointer<std::decay<T>::type>::type raw_t;
-		//std::function<TypeInfo()> accessor = std::bind(&TypeOfProxy<raw_t, is_dinamicly_reflectable<raw_t>::value>::TypeOfDynamic<raw_t>, object);
-		//return TypeRegister::Register(typeid(raw_t).hash_code(), accessor);
+		typedef std::remove_pointer<std::decay<T>::type>::type raw_t;
+		static_assert(is_dynamically_reflectable<raw_t>::value, "Type is not dynamically reflectable");
+		std::function<TypeInfo()> accessor = std::bind(&TypeOfProxy<raw_t, is_dynamically_reflectable<raw_t>::value>::TypeOfDynamic<T>, object);
+		return TypeRegister::Register(typeid(raw_t).hash_code(), accessor);
 	}
 }
 

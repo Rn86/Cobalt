@@ -2,11 +2,10 @@
 #define COBALT_TEST_CLASSES_HPP_INCLUDED
 
 #include <Cobalt/Forward.hpp>
-#include <Cobalt/Reflectable.hpp>
 
 namespace Cobalt
 {
-	class ATestClass : Reflectable<ATestClass>
+	class ATestClass
 	{
 	public:
 		ATestClass();
@@ -19,6 +18,7 @@ namespace Cobalt
 		int m_number;
 	private:
 		friend Access;
+		virtual TypeInfo TypeOf() const;
 		static void TypeOf(TypeRegistry<ATestClass> & reg);
 	};
 
@@ -35,6 +35,7 @@ namespace Cobalt
 
 	private:
 		friend Access;
+		virtual TypeInfo TypeOf() const;
 		static void TypeOf(TypeRegistry<BTestClass> & reg);
 		ATestClass m_member;
 	};

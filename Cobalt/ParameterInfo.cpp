@@ -1,12 +1,11 @@
-#include <Cobalt/ParameterInfo.hpp>
-#include <Cobalt/TypeInfo.hpp>
+#include <Cobalt/Reflection.hpp>
 
 namespace Cobalt
 {
 	struct ParameterInfo::Impl
 	{
-		Impl(const std::string & name, const TypeInfo & type)
-			: m_name(name),
+		Impl(const std::string && name, const TypeInfo & type)
+			: m_name(std::move(name)),
 			m_type(type)
 		{
 		}
@@ -15,8 +14,8 @@ namespace Cobalt
 		TypeInfo m_type;
 	};
 
-	ParameterInfo::ParameterInfo(const std::string & name, const TypeInfo & type)
-		: m_pImpl(new Impl(name, type))
+	ParameterInfo::ParameterInfo(const std::string && name, const TypeInfo & type)
+		: m_pImpl(new Impl(std::move(name), type))
 	{
 	}
 
@@ -74,5 +73,16 @@ namespace Cobalt
 	{
 		m_pImpl = std::move(parameter.m_pImpl);
 		return *this;
+	}
+
+	void ParameterInfo::TypeOf(TypeRegistry<ParameterInfo> & reg)
+	{
+		reg.Namespace("Cobalt");
+		reg.Name("ParameterInfo");
+		reg.Constructor<const std::string &&, const TypeInfo &>({ "name", "type" });
+		reg.Constructor<const ParameterInfo &>({ "parameter" });
+		reg.Constructor<const ParameterInfo &&>({ "parameter" });
+		reg.Method("GetName", &ParameterInfo::GetName);
+		reg.Method("GetType", &ParameterInfo::GetType);
 	}
 }

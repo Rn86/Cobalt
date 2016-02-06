@@ -121,22 +121,16 @@ namespace Cobalt
 			Assert::IsTrue(expected == actual);
 		}
 
-		/*TEST_METHOD(GetTypeOfTest)
+		TEST_METHOD(GetTypeOfTest)
 		{
 			ATestClass a(26);
 			ATestClass * pa = new BTestClass(a);
-			TypeInfo type = TypeOf(*pa);
+			TypeInfo type = TypeOf(pa);
 			std::string expected = "BTestClass";
 			std::string actual = type.GetName();
 			Logger::WriteMessage(actual.c_str());
 			Assert::IsTrue(expected == actual);
-			//Assert::IsTrue(std::is_base_of<Reflectable<BTestClass>, BTestClass>::value);
-			//PropertyInfo property = type.GetProperties()[0];
-			//MethodInfo method = property.GetGetMethod();
-			//ATestClass aa = method.Invoke<ATestClass>(b);
-			//int actual = aa.m_number;
-			//Assert::IsTrue(expected == actual);
-		}*/
+		}
 
 		TEST_METHOD(Test)
 		{

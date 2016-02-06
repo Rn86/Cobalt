@@ -25,6 +25,7 @@ namespace Cobalt
 		size_t GetHashCode() const;
 		std::string GetNamespace() const;
 		std::string GetName() const;
+		size_t GetSize() const;
 		std::vector<FieldInfo> GetFields() const;
 		std::vector<ConstructorInfo> GetConstructors() const;
 		std::vector<MethodInfo> GetMethods() const;

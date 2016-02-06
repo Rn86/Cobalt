@@ -1,6 +1,4 @@
-#include <Cobalt/MethodInfo.hpp>
-#include <Cobalt/ParameterInfo.hpp>
-#include <Cobalt/Object.hpp>
+#include <Cobalt/Reflection.hpp>
 
 namespace Cobalt
 {
@@ -104,5 +102,19 @@ namespace Cobalt
 	{
 		m_pImpl = std::move(method.m_pImpl);
 		return *this;
+	}
+
+	void MethodInfo::TypeOf(TypeRegistry<MethodInfo> & reg)
+	{
+		reg.Namespace("Cobalt");
+		reg.Name("MethodInfo");
+		reg.Constructor<const TypeInfo &, const std::string &&, const std::vector<ParameterInfo> &, MethodModifier, const accessor_t &>({ "returnType", "name", "parameters", "modifier", "accessor" });
+		reg.Constructor<const MethodInfo &>({ "method" });
+		reg.Constructor<const MethodInfo &&>({ "method" });
+		reg.Method("GetReturnType", &MethodInfo::GetReturnType);
+		reg.Method("GetName", &MethodInfo::GetName);
+		reg.Method("GetParameters", &MethodInfo::GetParameters);
+		reg.Method("GetModifier", &MethodInfo::GetModifier);
+		reg.Method("Invoke", &MethodInfo::Invoke);
 	}
 }

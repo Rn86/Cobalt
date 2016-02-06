@@ -145,7 +145,6 @@
     <ClInclude Include="OperatorInfo.hpp" />
     <ClInclude Include="ParameterInfo.hpp" />
     <ClInclude Include="PropertyInfo.hpp" />
-    <ClInclude Include="Reflectable.hpp" />
     <ClInclude Include="Reflection.hpp" />
     <ClInclude Include="TypeInfo.hpp" />
     <ClInclude Include="Object.hpp" />

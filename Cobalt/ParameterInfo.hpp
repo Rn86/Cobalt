@@ -11,7 +11,7 @@ namespace Cobalt
 	struct ParameterInfo
 	{
 	public:
-		ParameterInfo(const std::string & name, const TypeInfo & type);
+		ParameterInfo(const std::string && name, const TypeInfo & type);
 		ParameterInfo(const ParameterInfo & parameter);
 		ParameterInfo(const ParameterInfo && parameter) noexcept;
 
@@ -24,6 +24,10 @@ namespace Cobalt
 		bool operator!=(const ParameterInfo && parameter) const;
 		ParameterInfo & operator=(const ParameterInfo & parameter);
 		ParameterInfo & operator=(const ParameterInfo && parameter) noexcept;
+
+	private:
+		friend struct Access;
+		static void TypeOf(TypeRegistry<ParameterInfo> & reg);
 
 	private:
 		struct Impl;

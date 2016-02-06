@@ -1,6 +1,4 @@
-#include <Cobalt/FieldInfo.hpp>
-#include <Cobalt/TypeInfo.hpp>
-#include <Cobalt/Object.hpp>
+#include <Cobalt/Reflection.hpp>
 
 namespace Cobalt
 {
@@ -82,5 +80,17 @@ namespace Cobalt
 	{
 		m_pImpl = std::move(field.m_pImpl);
 		return *this;
+	}
+
+	void FieldInfo::TypeOf(TypeRegistry<FieldInfo> & reg)
+	{
+		reg.Namespace("Cobalt");
+		reg.Name("FieldInfo");
+		reg.Constructor<const std::string &&, const TypeInfo &&, const accessor_t &>({ "name", "type", "accessor" });
+		reg.Constructor<const FieldInfo &>({ "field" });
+		reg.Constructor<const FieldInfo &&>({ "field" });
+		reg.Method("GetName", &FieldInfo::GetName);
+		reg.Method("GetType", &FieldInfo::GetType);
+		reg.Method("Invoke", &FieldInfo::Invoke);
 	}
 }

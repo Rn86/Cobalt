@@ -38,6 +38,10 @@ namespace Cobalt
 		FieldInfo & operator=(const FieldInfo && field) noexcept;
 
 	private:
+		friend struct Access;
+		static void TypeOf(TypeRegistry<FieldInfo> & reg);
+
+	private:
 		struct Impl;
 		std::shared_ptr<Impl> m_pImpl;
 	};

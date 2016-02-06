@@ -45,9 +45,6 @@
     <ClInclude Include="Forward.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Reflectable.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OperatorInfo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

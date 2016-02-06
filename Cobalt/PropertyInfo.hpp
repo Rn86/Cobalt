@@ -7,15 +7,18 @@
 
 namespace Cobalt
 {
+	struct TypeInfo;
+	struct MethodInfo;
+
 	struct PropertyInfo
 	{
 	public:
-		PropertyInfo(const std::string && name, const struct MethodInfo & getter, const struct MethodInfo & setter);
+		PropertyInfo(const std::string && name, const MethodInfo & getter, const MethodInfo & setter);
 		PropertyInfo(const PropertyInfo & property);
 		PropertyInfo(const PropertyInfo && property) noexcept;
 
 		std::string GetName() const;
-		struct TypeInfo GetType() const;
+		TypeInfo GetType() const;
 		MethodInfo GetGetMethod() const;
 		MethodInfo GetSetMethod() const;
 

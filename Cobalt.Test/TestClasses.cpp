@@ -31,6 +31,11 @@ namespace Cobalt
 		return m_number == object.m_number;
 	}
 
+	TypeInfo ATestClass::TypeOf() const
+	{
+		return Cobalt::TypeOf<ATestClass>();
+	}
+
 	void ATestClass::TypeOf(TypeRegistry<ATestClass> & reg)
 	{
 		reg.Namespace("Cobalt");
@@ -68,6 +73,11 @@ namespace Cobalt
 	void BTestClass::SetMember(const ATestClass & member)
 	{
 		m_member = member;
+	}
+
+	TypeInfo BTestClass::TypeOf() const
+	{
+		return Cobalt::TypeOf<BTestClass>();
 	}
 
 	void BTestClass::TypeOf(TypeRegistry<BTestClass> & reg)

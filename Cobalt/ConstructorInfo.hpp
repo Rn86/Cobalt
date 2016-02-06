@@ -39,6 +39,10 @@ namespace Cobalt
 		ConstructorInfo & operator=(const ConstructorInfo && constructor) noexcept;
 
 	private:
+		friend struct Access;
+		static void TypeOf(TypeRegistry<ConstructorInfo> & reg);
+
+	private:
 		struct Impl;
 		std::shared_ptr<Impl> m_pImpl;
 	};

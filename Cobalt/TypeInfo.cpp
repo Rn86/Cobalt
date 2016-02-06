@@ -11,6 +11,7 @@ namespace Cobalt
 			: m_hash(reg.m_hash),
 			m_space(reg.m_space),
 			m_name(reg.m_name),
+			m_size(reg.m_size),
 			m_fields(reg.m_fields),
 			m_constructors(reg.m_constructors),
 			m_methods(reg.m_methods),
@@ -23,6 +24,7 @@ namespace Cobalt
 		size_t m_hash;
 		std::string m_name;
 		std::string m_space;
+		size_t m_size;
 		std::vector<FieldInfo> m_fields;
 		std::vector<ConstructorInfo> m_constructors;
 		std::vector<MethodInfo> m_methods;
@@ -105,14 +107,19 @@ namespace Cobalt
 		return m_pImpl->m_hash;
 	}
 
+	std::string TypeInfo::GetName() const
+	{
+		return m_pImpl->m_name;
+	}
+
 	std::string TypeInfo::GetNamespace() const
 	{
 		return m_pImpl->m_space;
 	}
 
-	std::string TypeInfo::GetName() const
+	size_t TypeInfo::GetSize() const
 	{
-		return m_pImpl->m_name;
+		return m_pImpl->m_size;
 	}
 
 	std::vector<FieldInfo> TypeInfo::GetFields() const

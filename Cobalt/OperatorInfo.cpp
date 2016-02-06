@@ -1,6 +1,4 @@
-#include <Cobalt/OperatorInfo.hpp>
-#include <Cobalt/MethodInfo.hpp>
-#include <Cobalt/Object.hpp>
+#include <Cobalt/Reflection.hpp>
 
 namespace Cobalt
 {
@@ -75,5 +73,16 @@ namespace Cobalt
 	{
 		m_pImpl = std::move(oper.m_pImpl);
 		return *this;
+	}
+
+	void OperatorInfo::TypeOf(TypeRegistry<OperatorInfo> & reg)
+	{
+		reg.Namespace("Cobalt");
+		reg.Name("OperatorInfo");
+		reg.Constructor<Operator, const MethodInfo &>({ "oper", "method" });
+		reg.Constructor<const OperatorInfo &>({ "oper" });
+		reg.Constructor<const OperatorInfo &&>({ "oper" });
+		reg.Method("GetOperator", &OperatorInfo::GetOperator);
+		reg.Method("GetMethod", &OperatorInfo::GetMethod);
 	}
 }

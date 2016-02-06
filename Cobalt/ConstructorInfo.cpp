@@ -1,6 +1,4 @@
-#include <Cobalt/ConstructorInfo.hpp>
-#include <Cobalt/ParameterInfo.hpp>
-#include <Cobalt/Object.hpp>
+#include <Cobalt/Reflection.hpp>
 
 namespace Cobalt
 {
@@ -71,5 +69,16 @@ namespace Cobalt
 	{
 		m_pImpl = std::move(constructor.m_pImpl);
 		return *this;
+	}
+
+	void ConstructorInfo::TypeOf(TypeRegistry<ConstructorInfo> & reg)
+	{
+		reg.Namespace("Cobalt");
+		reg.Name("ConstructorInfo");
+		reg.Constructor<const std::vector<ParameterInfo> &, const accessor_t &>({ "parameters", "accessor" });
+		reg.Constructor<const ConstructorInfo &>({ "constructor" });
+		reg.Constructor<const ConstructorInfo &&>({ "constructor" });
+		reg.Method("GetParameters", &ConstructorInfo::GetParameters);
+		reg.Method("Invoke", &ConstructorInfo::Invoke);
 	}
 }
