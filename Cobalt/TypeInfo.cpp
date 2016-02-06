@@ -187,7 +187,7 @@ namespace Cobalt
 			auto parameters = constructor.GetParameters();
 			for (size_t i = 0; i < parameters.size(); i++)
 			{
-				found = (types[i] == parameters[i].GetType());
+				found = (types[i] == parameters[i].GetParameterType());
 				if (!found) break;
 			}
 			if (found) return constructor;
@@ -235,6 +235,11 @@ namespace Cobalt
 	{
 		m_pImpl = std::move(type.m_pImpl);
 		return *this;
+	}
+
+	TypeInfo TypeInfo::GetType() const
+	{
+		return Cobalt::TypeOf<TypeInfo>();
 	}
 
 	void TypeInfo::TypeOf(TypeRegistry<TypeInfo> & reg)

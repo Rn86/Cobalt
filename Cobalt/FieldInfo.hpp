@@ -20,7 +20,7 @@ namespace Cobalt
 		FieldInfo(const FieldInfo && field) noexcept;
 
 		std::string GetName() const;
-		TypeInfo GetType() const;
+		TypeInfo GetFieldType() const;
 
 		template <typename T, typename O>
 		T Invoke(const O & object) const
@@ -39,6 +39,7 @@ namespace Cobalt
 
 	private:
 		friend struct Access;
+		virtual TypeInfo GetType() const;
 		static void TypeOf(TypeRegistry<FieldInfo> & reg);
 
 	private:

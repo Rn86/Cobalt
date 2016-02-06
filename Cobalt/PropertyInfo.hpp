@@ -18,7 +18,7 @@ namespace Cobalt
 		PropertyInfo(const PropertyInfo && property) noexcept;
 
 		std::string GetName() const;
-		TypeInfo GetType() const;
+		TypeInfo GetPropertyType() const;
 		MethodInfo GetGetMethod() const;
 		MethodInfo GetSetMethod() const;
 
@@ -31,6 +31,7 @@ namespace Cobalt
 
 	private:
 		friend struct Access;
+		virtual TypeInfo GetType() const;
 		static void TypeOf(TypeRegistry<PropertyInfo> & reg);
 
 	private:

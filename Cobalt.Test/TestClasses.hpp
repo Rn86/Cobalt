@@ -15,12 +15,10 @@ namespace Cobalt
 
 		bool operator==(const ATestClass & object) const;
 
-		virtual TypeInfo TypeOf() const;
-
 		int m_number;
 	private:
 		friend Access;
-		
+		virtual TypeInfo GetType() const;
 		static void TypeOf(TypeRegistry<ATestClass> & reg);
 	};
 
@@ -37,7 +35,7 @@ namespace Cobalt
 
 	private:
 		friend Access;
-		virtual TypeInfo TypeOf() const;
+		virtual TypeInfo GetType() const;
 		static void TypeOf(TypeRegistry<BTestClass> & reg);
 		ATestClass m_member;
 	};

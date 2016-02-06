@@ -104,6 +104,11 @@ namespace Cobalt
 		return *this;
 	}
 
+	TypeInfo MethodInfo::GetType() const
+	{
+		return Cobalt::TypeOf<MethodInfo>();
+	}
+
 	void MethodInfo::TypeOf(TypeRegistry<MethodInfo> & reg)
 	{
 		reg.Namespace("Cobalt");

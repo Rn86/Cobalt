@@ -71,6 +71,11 @@ namespace Cobalt
 		return *this;
 	}
 
+	TypeInfo ConstructorInfo::GetType() const
+	{
+		return Cobalt::TypeOf<ConstructorInfo>();
+	}
+
 	void ConstructorInfo::TypeOf(TypeRegistry<ConstructorInfo> & reg)
 	{
 		reg.Namespace("Cobalt");

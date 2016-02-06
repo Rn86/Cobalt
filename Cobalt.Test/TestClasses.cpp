@@ -31,7 +31,7 @@ namespace Cobalt
 		return m_number == object.m_number;
 	}
 
-	TypeInfo ATestClass::TypeOf() const
+	TypeInfo ATestClass::GetType() const
 	{
 		return Cobalt::TypeOf<ATestClass>();
 	}
@@ -41,7 +41,7 @@ namespace Cobalt
 		reg.Namespace("Cobalt");
 		reg.Name("ATestClass");
 		reg.Field("m_number", &ATestClass::m_number);
-		reg.Operator(Operator::equality, { "object" });
+		reg.Operator<EQUALITY>({ "object" });
 	}
 
 	BTestClass::BTestClass()
@@ -75,7 +75,7 @@ namespace Cobalt
 		m_member = member;
 	}
 
-	TypeInfo BTestClass::TypeOf() const
+	TypeInfo BTestClass::GetType() const
 	{
 		return Cobalt::TypeOf<BTestClass>();
 	}

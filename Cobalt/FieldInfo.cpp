@@ -36,7 +36,7 @@ namespace Cobalt
 		return m_pImpl->m_name;
 	}
 
-	TypeInfo FieldInfo::GetType() const
+	TypeInfo FieldInfo::GetFieldType() const
 	{
 		return m_pImpl->m_type;
 	}
@@ -49,25 +49,25 @@ namespace Cobalt
 	bool FieldInfo::operator==(const FieldInfo & field) const
 	{
 		return m_pImpl->m_name == field.GetName() &&
-			m_pImpl->m_type == field.GetType();
+			m_pImpl->m_type == field.GetFieldType();
 	}
 
 	bool FieldInfo::operator==(const FieldInfo && field) const
 	{
 		return m_pImpl->m_name == field.GetName() &&
-			m_pImpl->m_type == field.GetType();
+			m_pImpl->m_type == field.GetFieldType();
 	}
 
 	bool FieldInfo::operator!=(const FieldInfo & field) const
 	{
 		return m_pImpl->m_name != field.GetName() ||
-			m_pImpl->m_type != field.GetType();
+			m_pImpl->m_type != field.GetFieldType();
 	}
 
 	bool FieldInfo::operator!=(const FieldInfo && field) const
 	{
 		return m_pImpl->m_name != field.GetName() ||
-			m_pImpl->m_type != field.GetType();
+			m_pImpl->m_type != field.GetFieldType();
 	}
 
 	FieldInfo & FieldInfo::operator=(const FieldInfo & field)
@@ -82,6 +82,11 @@ namespace Cobalt
 		return *this;
 	}
 
+	TypeInfo FieldInfo::GetType() const
+	{
+		return Cobalt::TypeOf<FieldInfo>();
+	}
+
 	void FieldInfo::TypeOf(TypeRegistry<FieldInfo> & reg)
 	{
 		reg.Namespace("Cobalt");
@@ -90,7 +95,7 @@ namespace Cobalt
 		reg.Constructor<const FieldInfo &>({ "field" });
 		reg.Constructor<const FieldInfo &&>({ "field" });
 		reg.Method("GetName", &FieldInfo::GetName);
-		reg.Method("GetType", &FieldInfo::GetType);
+		reg.Method("GetFieldType", &FieldInfo::GetFieldType);
 		reg.Method("Invoke", &FieldInfo::Invoke);
 	}
 }

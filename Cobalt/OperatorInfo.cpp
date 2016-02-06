@@ -75,6 +75,11 @@ namespace Cobalt
 		return *this;
 	}
 
+	TypeInfo OperatorInfo::GetType() const
+	{
+		return Cobalt::TypeOf<OperatorInfo>();
+	}
+
 	void OperatorInfo::TypeOf(TypeRegistry<OperatorInfo> & reg)
 	{
 		reg.Namespace("Cobalt");

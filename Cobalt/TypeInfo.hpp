@@ -61,6 +61,7 @@ namespace Cobalt
 	private:
 		friend struct Access;
 		friend struct TypeRegister;
+		virtual TypeInfo GetType() const;
 		static void TypeOf(TypeRegistry<TypeInfo> & reg);
 
 	private:

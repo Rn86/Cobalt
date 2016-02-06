@@ -16,7 +16,7 @@ namespace Cobalt
 		ParameterInfo(const ParameterInfo && parameter) noexcept;
 
 		std::string GetName() const;
-		TypeInfo GetType() const;
+		TypeInfo GetParameterType() const;
 
 		bool operator==(const ParameterInfo & parameter) const;
 		bool operator==(const ParameterInfo && parameter) const;
@@ -27,6 +27,7 @@ namespace Cobalt
 
 	private:
 		friend struct Access;
+		virtual TypeInfo GetType() const;
 		static void TypeOf(TypeRegistry<ParameterInfo> & reg);
 
 	private:

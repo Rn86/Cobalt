@@ -34,7 +34,7 @@ namespace Cobalt
 		return m_pImpl->m_name;
 	}
 
-	TypeInfo ParameterInfo::GetType() const
+	TypeInfo ParameterInfo::GetParameterType() const
 	{
 		return m_pImpl->m_type;
 	}
@@ -42,25 +42,25 @@ namespace Cobalt
 	bool ParameterInfo::operator==(const ParameterInfo & parameter) const
 	{
 		return m_pImpl->m_name == parameter.GetName() &&
-			m_pImpl->m_type == parameter.GetType();
+			m_pImpl->m_type == parameter.GetParameterType();
 	}
 
 	bool ParameterInfo::operator==(const ParameterInfo && parameter) const
 	{
 		return m_pImpl->m_name == parameter.GetName() &&
-			m_pImpl->m_type == parameter.GetType();
+			m_pImpl->m_type == parameter.GetParameterType();
 	}
 
 	bool ParameterInfo::operator!=(const ParameterInfo & parameter) const
 	{
 		return m_pImpl->m_name != parameter.GetName() ||
-			m_pImpl->m_type != parameter.GetType();
+			m_pImpl->m_type != parameter.GetParameterType();
 	}
 
 	bool ParameterInfo::operator!=(const ParameterInfo && parameter) const
 	{
 		return m_pImpl->m_name != parameter.GetName() ||
-			m_pImpl->m_type != parameter.GetType();
+			m_pImpl->m_type != parameter.GetParameterType();
 	}
 
 	ParameterInfo & ParameterInfo::operator=(const ParameterInfo & parameter)
@@ -75,6 +75,11 @@ namespace Cobalt
 		return *this;
 	}
 
+	TypeInfo ParameterInfo::GetType() const
+	{
+		return Cobalt::TypeOf<ParameterInfo>();
+	}
+
 	void ParameterInfo::TypeOf(TypeRegistry<ParameterInfo> & reg)
 	{
 		reg.Namespace("Cobalt");
@@ -83,6 +88,6 @@ namespace Cobalt
 		reg.Constructor<const ParameterInfo &>({ "parameter" });
 		reg.Constructor<const ParameterInfo &&>({ "parameter" });
 		reg.Method("GetName", &ParameterInfo::GetName);
-		reg.Method("GetType", &ParameterInfo::GetType);
+		reg.Method("GetParameterType", &ParameterInfo::GetParameterType);
 	}
 }

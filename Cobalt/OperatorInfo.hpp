@@ -13,9 +13,9 @@ namespace Cobalt
 
 	enum Operator
 	{
-		addition,
-		subtraction,
-		equality
+		ADDITION,
+		SUBTRACTION,
+		EQUALITY,
 	};
 
 	struct OperatorInfo
@@ -46,6 +46,7 @@ namespace Cobalt
 
 	private:
 		friend struct Access;
+		virtual TypeInfo GetType() const;
 		static void TypeOf(TypeRegistry<OperatorInfo> & reg);
 
 	private:

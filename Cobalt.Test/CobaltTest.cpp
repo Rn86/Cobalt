@@ -132,7 +132,7 @@ namespace Cobalt
 			Assert::IsTrue(expected == actual);
 		}
 
-		TEST_METHOD(Test)
+		TEST_METHOD(OperatorDispatchTest)
 		{
 			ATestClass a(26);
 			ATestClass b(26);

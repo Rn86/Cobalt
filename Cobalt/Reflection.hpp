@@ -217,24 +217,43 @@ namespace Cobalt
 			return MethodInfo(MethodMaker<M>::GetReturnType(), std::move(name), MethodMaker<M>::MakeParameters(std::move(names)), MethodMaker<M>::modifier, MethodMaker<M>::Make(method));
 		}
 
-		static OperatorInfo MakeOperator(Cobalt::Operator oper, const std::vector<std::string> && names)
+		template <Cobalt::Operator oper>
+		struct OperatorMaker;
+		template <>
+		struct OperatorMaker<Cobalt::Operator::ADDITION>
 		{
-			switch (oper)
+			static OperatorInfo Make(const std::vector<std::string> && names)
 			{
-			case Cobalt::Operator::equality:
-				return{ oper, MakeMethod("operator==", &T::operator==, std::move(names)) };
+				return{ Cobalt::Operator::ADDITION, MakeMethod("operator+", &T::operator+, std::move(names)) };
 			}
-			throw std::exception("Operator is not supported by Cobalt");
+		};
+		template <>
+		struct OperatorMaker<Cobalt::Operator::SUBTRACTION>
+		{
+			static OperatorInfo Make(const std::vector<std::string> && names)
+			{
+				return{ Cobalt::Operator::SUBTRACTION, MakeMethod("operator-", &T::operator-, std::move(names)) };
+			}
+		};
+		template <>
+		struct OperatorMaker<Cobalt::Operator::EQUALITY>
+		{
+			static OperatorInfo Make(const std::vector<std::string> && names)
+			{
+				return{ Cobalt::Operator::EQUALITY, MakeMethod("operator==", &T::operator==, std::move(names)) };
+			}
 		};
 
-		void Operator(Cobalt::Operator oper, const std::vector<std::string> && names)
+		template <Cobalt::Operator oper>
+		void Operator(const std::vector<std::string> && names)
 		{
-			m_parameters.m_operators.push_back(MakeOperator(oper, std::move(names)));
+			m_parameters.m_operators.push_back(OperatorMaker<oper>::Make(std::move(names)));
 		}
 
-		void Operator(Cobalt::Operator oper)
+		template <Cobalt::Operator oper>
+		void Operator()
 		{
-			m_parameters.m_operators.push_back(MakeOperator(oper, {}));
+			m_parameters.m_operators.push_back(OperatorMaker<oper>::Make({}));
 		}
 
 		TypeInfoParameters m_parameters;
@@ -256,26 +275,26 @@ namespace Cobalt
 		}
 
 		template <typename T, bool ptr>
-		struct CallTypeOf
+		struct CallGetType
 		{
-			static auto TypeOf(const T & object)
+			static auto GetType(const T & object)
 			{
-				return object.TypeOf();
+				return object.GetType();
 			}
 		};
 		template <typename T>
-		struct CallTypeOf<T, true>
+		struct CallGetType<T, true>
 		{
-			static auto TypeOf(const T & object)
+			static auto GetType(const T & object)
 			{
-				return object->TypeOf();
+				return object->GetType();
 			}
 		};
 
 		template <typename T>
-		static auto TypeOf(const T & object)
+		static auto GetType(const T & object)
 		{
-			return CallTypeOf<T, std::is_pointer<T>::value>::TypeOf(object);
+			return CallGetType<T, std::is_pointer<T>::value>::GetType(object);
 		}
 
 		template <typename T>
@@ -300,7 +319,7 @@ namespace Cobalt
 			struct Check;
 
 			template<typename U>
-			static std::true_type Test(Check<U, &U::TypeOf>*);
+			static std::true_type Test(Check<U, &U::GetType>*);
 
 			template<typename U>
 			static std::false_type Test(...);
@@ -319,9 +338,9 @@ namespace Cobalt
 			return TypeInfo(reg.m_parameters);
 		}
 		template <typename C>
-		static auto TypeOf(const C & object)
+		static auto GetType(const C & object)
 		{
-			return Access::TypeOf(object);
+			return Access::GetType(object);
 		}
 	};
 
@@ -340,20 +359,20 @@ namespace Cobalt
 	template <typename T, bool ref>
 	struct TypeOfProxy
 	{
-		static auto TypeOfStatic()
+		static auto TypeOf()
 		{
 			return TypeOfAccess::TypeOf<T>();
 		}
 		template <typename C>
-		static auto TypeOfDynamic(const C & object)
+		static auto GetType(const C & object)
 		{
-			return TypeOfAccess::TypeOf(object);
+			return TypeOfAccess::GetType(object);
 		}
 	};
 	template <typename T>
 	struct TypeOfProxy<T, false>
 	{
-		static TypeInfo TypeOfStatic()
+		static TypeInfo TypeOf()
 		{
 			TypeInfoParameters parameters;
 			parameters.m_name = typeid(T).name();
@@ -365,7 +384,7 @@ namespace Cobalt
 	template <>
 	struct TypeOfProxy<void, false>
 	{
-		static TypeInfo TypeOfStatic()
+		static TypeInfo TypeOf()
 		{
 			TypeInfoParameters parameters;
 			parameters.m_name = typeid(void).name();
@@ -383,7 +402,7 @@ namespace Cobalt
 	static TypeInfo TypeOf()
 	{
 		typedef std::remove_pointer<std::decay<T>::type>::type raw_t;
-		std::function<TypeInfo()> accessor = std::bind(&TypeOfProxy<raw_t, is_staticly_reflectable<raw_t>::value>::TypeOfStatic);
+		std::function<TypeInfo()> accessor = std::bind(&TypeOfProxy<raw_t, is_staticly_reflectable<raw_t>::value>::TypeOf);
 		return TypeRegister::Register(typeid(raw_t).hash_code(), accessor);
 	}
 
@@ -392,7 +411,7 @@ namespace Cobalt
 	{
 		typedef std::remove_pointer<std::decay<T>::type>::type raw_t;
 		static_assert(is_dynamically_reflectable<raw_t>::value, "Type is not dynamically reflectable");
-		return TypeOfProxy<raw_t, is_dynamically_reflectable<raw_t>::value>::TypeOfDynamic<T>(object);
+		return TypeOfProxy<raw_t, is_dynamically_reflectable<raw_t>::value>::GetType(object);
 	}
 }
 

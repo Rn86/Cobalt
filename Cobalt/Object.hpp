@@ -58,15 +58,27 @@ namespace Cobalt
 			return *this;
 		}
 
+		Object operator+(const Object & object) const
+		{
+			auto method = m_pImpl->m_type.GetOperator(Operator::ADDITION).GetMethod();
+			return method.Invoke(Object(*this), std::vector<Object>{ object });
+		}
+
+		Object operator+(const Object && object) const
+		{
+			auto method = m_pImpl->m_type.GetOperator(Operator::ADDITION).GetMethod();
+			return method.Invoke(Object(*this), std::vector<Object>{ std::move(object) });
+		}
+
 		bool operator==(const Object & object) const
 		{
-			auto method = m_pImpl->m_type.GetOperator(Operator::equality).GetMethod();
+			auto method = m_pImpl->m_type.GetOperator(Operator::EQUALITY).GetMethod();
 			return method.Invoke(Object(*this), std::vector<Object>{ object });
 		}
 
 		bool operator==(const Object && object) const
 		{
-			auto method = m_pImpl->m_type.GetOperator(Operator::equality).GetMethod();
+			auto method = m_pImpl->m_type.GetOperator(Operator::EQUALITY).GetMethod();
 			return method.Invoke(Object(*this), std::vector<Object>{ std::move(object) });
 		}
 

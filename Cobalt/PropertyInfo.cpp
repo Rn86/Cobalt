@@ -36,7 +36,7 @@ namespace Cobalt
 		return m_pImpl->m_name;
 	}
 
-	TypeInfo PropertyInfo::GetType() const
+	TypeInfo PropertyInfo::GetPropertyType() const
 	{
 		return m_pImpl->m_getter.GetReturnType();
 	}
@@ -87,6 +87,11 @@ namespace Cobalt
 		return *this;
 	}
 
+	TypeInfo PropertyInfo::GetType() const
+	{
+		return Cobalt::TypeOf<PropertyInfo>();
+	}
+
 	void PropertyInfo::TypeOf(TypeRegistry<PropertyInfo> & reg)
 	{
 		reg.Namespace("Cobalt");
@@ -95,7 +100,7 @@ namespace Cobalt
 		reg.Constructor<const PropertyInfo &>({ "property" });
 		reg.Constructor<const PropertyInfo &&>({ "property" });
 		reg.Method("GetName", &PropertyInfo::GetName);
-		reg.Method("GetType", &PropertyInfo::GetType);
+		reg.Method("GetPropertyType", &PropertyInfo::GetPropertyType);
 		reg.Method("GetGetMethod", &PropertyInfo::GetGetMethod);
 		reg.Method("GetSetMethod", &PropertyInfo::GetSetMethod);
 	}
