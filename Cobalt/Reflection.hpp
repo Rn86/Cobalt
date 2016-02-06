@@ -392,8 +392,7 @@ namespace Cobalt
 	{
 		typedef std::remove_pointer<std::decay<T>::type>::type raw_t;
 		static_assert(is_dynamically_reflectable<raw_t>::value, "Type is not dynamically reflectable");
-		std::function<TypeInfo()> accessor = std::bind(&TypeOfProxy<raw_t, is_dynamically_reflectable<raw_t>::value>::TypeOfDynamic<T>, object);
-		return TypeRegister::Register(typeid(raw_t).hash_code(), accessor);
+		return TypeOfProxy<raw_t, is_dynamically_reflectable<raw_t>::value>::TypeOfDynamic<T>(object);
 	}
 }
 

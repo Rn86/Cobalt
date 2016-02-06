@@ -79,6 +79,7 @@ namespace Cobalt
 				proxy.m_pImpl->m_name = type.GetName();
 				proxy.m_pImpl->m_operators = type.GetOperators();
 				proxy.m_pImpl->m_properties = type.GetProperties();
+				proxy.m_pImpl->m_size = type.GetSize();
 				proxy.m_pImpl->m_space = type.GetNamespace();
 			}
 			return proxy;
