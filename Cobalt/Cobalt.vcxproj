@@ -146,6 +146,7 @@
     <ClInclude Include="ParameterInfo.hpp" />
     <ClInclude Include="PropertyInfo.hpp" />
     <ClInclude Include="Reflection.hpp" />
+    <ClInclude Include="TypeBuilder.hpp" />
     <ClInclude Include="TypeInfo.hpp" />
     <ClInclude Include="Object.hpp" />
   </ItemGroup>
@@ -156,6 +157,7 @@
     <ClCompile Include="OperatorInfo.cpp" />
     <ClCompile Include="ParameterInfo.cpp" />
     <ClCompile Include="PropertyInfo.cpp" />
+    <ClCompile Include="TypeBuilder.cpp" />
     <ClCompile Include="TypeInfo.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

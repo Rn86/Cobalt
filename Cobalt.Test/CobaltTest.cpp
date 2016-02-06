@@ -6,6 +6,7 @@
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 #include <Cobalt/Activator.hpp>
+#include <Cobalt/TypeBuilder.hpp>
 
 namespace Cobalt
 {
@@ -139,6 +140,20 @@ namespace Cobalt
 			Object _a(a);
 			Object _b(b);
 			Assert::IsTrue(_a == _b);
+		}
+
+		TEST_METHOD(TypeBuilderTest1)
+		{
+			TypeBuilder builder("Cobalt", "Runtime_Type");
+			builder.DefineField("m_field", std::function<int(const ATestClass &)>([](const ATestClass & object)
+			{
+				return object.m_number;
+			}));
+			auto type = builder.CreateType();
+			auto fields = type.GetFields();
+			int expected = 1;
+			int actual = fields.size();
+			Assert::IsTrue(expected == actual);
 		}
 	};
 
